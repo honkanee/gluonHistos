@@ -166,9 +166,9 @@ GluonHistosFill::GluonHistosFill(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("CMSOpenDataJets_MC_8TeV_500K.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("./input_ROOT_files/CMSOpenDataJets_MC_8TeV_500K.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("CMSOpenDataJets_MC_8TeV_500K.root");
+         f = new TFile("./input_ROOT_files/CMSOpenDataJets_MC_8TeV_500K.root");
       }
       f->GetObject("OpenDataTree",tree);
 

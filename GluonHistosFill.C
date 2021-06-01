@@ -3,6 +3,8 @@
 #include <TH2.h>
 #include <TStyle.h>
 #include <TCanvas.h>
+#include <TProfile.h>
+#include <iostream>
 
 void GluonHistosFill::Loop()
 {
@@ -33,7 +35,11 @@ void GluonHistosFill::Loop()
 
    TFile* file = new TFile("outputGluonHistos.root", "recreate");
 
-   TH1D* hist = new TH1D("hist","", 100, 15, 1015);
+
+   int nbins = 100;
+
+   TProfile* hist1 = new TProfile("jetPt_genJetPt", "", nbins, 15, 1015);
+   TProfile* hist2 = new TProfile("jetPt_genJetPt, nGenJetPF", "", nbins, 15, 1015);
 
    Long64_t nentries = fChain->GetEntriesFast();
 
@@ -44,7 +50,9 @@ void GluonHistosFill::Loop()
       nb = fChain->GetEntry(jentry);   nbytes += nb;
       // if (Cut(ientry) < 0) continue;
 
-      hist->Fill(jetPt);
+      if (!((fabs(jetEta)<1.3 && jetPtOrder<2 && isPhysG) && fpclassify(genJetPt) == FP_NORMAL)) continue;
+      hist1->Fill(jetPt, jetPt/genJetPt);
+      hist2->Fill(jetPt, jetPt/genJetPt, nGenJetPF);
    }
 
    file->Write();
