@@ -7,7 +7,9 @@
 #ifndef GluonHistosFill_h
 #define GluonHistosFill_h
 
-//#define SINGLE_TREE
+#define SINGLE_TREE
+
+#include <iostream>
 
 #include <TROOT.h>
 #include <TChain.h>
