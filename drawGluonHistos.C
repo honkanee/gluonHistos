@@ -31,9 +31,18 @@ void drawGluonHistos() {
     gluon_pt_resp->SetLineColor(kBlack);
     gluon_pt_resp->SetLineWidth(2);
 
+    gluon_pt_resp_nGenJetPF->SetMarkerColor(kGray +1);
+    gluon_pt_resp_nGenJetPF->SetLineColor(kGray +1);
+    gluon_pt_resp_nGenJetPF->SetLineWidth(2);
+
     quark_pt_resp->SetMarkerColor(kRed);
     quark_pt_resp->SetLineColor(kRed);
     quark_pt_resp->SetLineWidth(2);
+
+    quark_pt_resp_nGenJetPF->SetMarkerColor(kYellow);
+    quark_pt_resp_nGenJetPF->SetLineColor(kYellow);
+    quark_pt_resp_nGenJetPF->SetLineWidth(2);
+
 
     gPad->SetLogx();
     gluon_pt_resp->SetAxisRange(30, 3500, "X");
@@ -44,6 +53,8 @@ void drawGluonHistos() {
 
     gluon_pt_resp->Draw();
     quark_pt_resp->Draw("same");
+    gluon_pt_resp_nGenJetPF->Draw("same");
+    quark_pt_resp_nGenJetPF->Draw("same");
 
     TCanvas* c2 = new TCanvas("c2", "", 900, 700);
 
