@@ -35,11 +35,20 @@ void GluonHistosFill::Loop()
 
    TFile* file = new TFile("outputGluonHistos.root", "recreate");
 
+   const int N_PT_BINS = 79;
+   const double ptrange[N_PT_BINS+1] = {
+      1, 5, 6, 8, 10, 12, 15, 18, 21, 24, 28, 32, 37, 43, 49, 56, 64, 74, 84, 97, 114, 133, 153, 174, 196, 220, 245, 272, 300, 330, 362, 395, 430, 468, 507, 548, 592, 638, 686, 737, 790, 846, 905, 967, 1032, 1101, 1172, 1248, 1327, 1410, 1497, 1588, 1684, 1784, 1890, 2000, 2116, 2238, 2366, 2500, 2640, 2787, 2941, 3103, 3273, 3450, 3637, 3832, 4037, 4252, 4477, 4713, 4961, 5220, 5492, 5777, 6076, 6389, 6717, 7000
+   };
 
-   int nbins = 100;
+   // Gluons
+   TProfile* gHist1 = new TProfile("gluon_pt_resp", "", N_PT_BINS, ptrange);
+   TProfile* gHist2 = new TProfile("gluon_pt_resp_nGenJetPF", "", N_PT_BINS, ptrange);
+   TProfile* gHist3 = new TProfile("gluon_nGenPF", "", N_PT_BINS, ptrange);
 
-   TProfile* hist1 = new TProfile("jetPt_genJetPt", "", nbins, 15, 1015);
-   TProfile* hist2 = new TProfile("jetPt_genJetPt, nGenJetPF", "", nbins, 15, 1015);
+   // Quarks
+   TProfile* qHist1 = new TProfile("quark_pt_resp", "", N_PT_BINS, ptrange);
+   TProfile* qHist2 = new TProfile("quark_pt_resp_nGenJetPF", "", N_PT_BINS, ptrange);
+   TProfile* qHist3 = new TProfile("quark_nGenPF", "", N_PT_BINS, ptrange);
 
    Long64_t nentries = fChain->GetEntriesFast();
 
@@ -50,9 +59,22 @@ void GluonHistosFill::Loop()
       nb = fChain->GetEntry(jentry);   nbytes += nb;
       // if (Cut(ientry) < 0) continue;
 
-      if (!((fabs(jetEta)<1.3 && jetPtOrder<2 && isPhysG) && fpclassify(genJetPt) == FP_NORMAL)) continue;
-      hist1->Fill(jetPt, jetPt/genJetPt);
-      hist2->Fill(jetPt, jetPt/genJetPt, nGenJetPF);
+      if (fabs(jetEta)<1.3 && jetPtOrder<2 && fpclassify(genJetPt) == FP_NORMAL && genJetPt > 0) {
+            cout << physFlav << endl;
+            if (isPhysG) {
+               gHist1->Fill(jetPt, jetPt/genJetPt);
+               cout << to_string(jetPt) + " " + to_string(jetPt/genJetPt) << endl;
+               gHist2->Fill(jetPt, jetPt/genJetPt, 1./nGenJetPF);
+               gHist3->Fill(jetPt, nGenJetPF);
+            }
+            else {
+               qHist1->Fill(jetPt, jetPt/ genJetPt);
+               qHist2->Fill(jetPt, jetPt/genJetPt, 1./nGenJetPF);
+               qHist3->Fill(jetPt, nGenJetPF);
+            }
+      };
+
+
    }
 
    file->Write();
