@@ -11,7 +11,7 @@
 void drawGluonHistos() {
     setTDRStyle();
 
-    TFile* f = TFile::Open("outputGluonHistos_single.root");
+    TFile* f = TFile::Open("outputGluonHistos.root");
 
     // Gluons
    TProfile* gluon_pt_resp;

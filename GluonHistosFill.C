@@ -72,7 +72,7 @@ void GluonHistosFill::Loop()
                gHist2->Fill(jetPt, jetPt/genJetPt, 1./nGenJetPF);
                gHist3->Fill(jetPt, nGenJetPF);
             }
-            else {
+            else { // Or should e.g. isPhysUSD be used for quarks?
                qHist1->Fill(jetPt, jetPt/ genJetPt);
                qHist2->Fill(jetPt, jetPt/genJetPt, 1./nGenJetPF);
                qHist3->Fill(jetPt, nGenJetPF);
