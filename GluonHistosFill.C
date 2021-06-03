@@ -1,5 +1,7 @@
 #define GluonHistosFill_cxx
+
 #include "GluonHistosFill.h"
+
 #include <TH2.h>
 #include <TStyle.h>
 #include <TCanvas.h>
@@ -32,7 +34,11 @@ void GluonHistosFill::Loop()
 //by  b_branchname->GetEntry(ientry); //read only this branch
    if (fChain == 0) return;
 
-   TFile* file = new TFile("outputGluonHistos.root", "recreate");
+   #ifdef SINGLE_TREE
+   TFile* file = new TFile("outputGluonHistos_single.root", "recreate");
+   #else
+   TFile* file = new TFile("outputGluonHistos.root", "recreate");   
+   #endif
 
    const int NBINS = 79;
    const double ptrange[NBINS+1] = {
@@ -43,11 +49,13 @@ void GluonHistosFill::Loop()
    TProfile* gHist1 = new TProfile("gluon_pt_resp", "", NBINS, ptrange);
    TProfile* gHist2 = new TProfile("gluon_pt_resp_nGenJetPF", "", NBINS, ptrange);
    TProfile* gHist3 = new TProfile("gluon_nGenPF", "", NBINS, ptrange);
+   TH1D* gHist4 = new TH1D("gluon_nGenPF_w", "", NBINS, ptrange);
 
    // Quarks
    TProfile* qHist1 = new TProfile("quark_pt_resp", "", NBINS, ptrange);
    TProfile* qHist2 = new TProfile("quark_pt_resp_nGenJetPF", "", NBINS, ptrange);
    TProfile* qHist3 = new TProfile("quark_nGenPF", "", NBINS, ptrange);
+   TH1D* qHist4 = new TH1D("quark_nGenPF_w", "", NBINS, ptrange);
 
    Long64_t nentries = fChain->GetEntriesFast();
 
@@ -70,9 +78,13 @@ void GluonHistosFill::Loop()
                qHist3->Fill(jetPt, nGenJetPF);
             }
       };
-
-
    }
+
+   TH1D* q_g_nGenPF_ratio = new TH1D("q_g_nGenPF_ratio", "", NBINS, ptrange);
+   q_g_nGenPF_ratio->Divide(qHist3->ProjectionX(""), gHist3->ProjectionX(""));
+
+   gHist4->Multiply(gHist3->ProjectionX(""), q_g_nGenPF_ratio);
+   qHist4->Divide(qHist3->ProjectionX(""), q_g_nGenPF_ratio);
 
    file->Write();
    file->Close();
