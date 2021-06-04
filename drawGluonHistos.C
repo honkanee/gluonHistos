@@ -11,29 +11,32 @@
 void drawGluonHistos() {
     setTDRStyle();
 
-    TFile* f = TFile::Open("outputGluonHistos.root");
+    TFile* f = TFile::Open("outputGluonHistos_single.root");
 
     // Gluons
    TProfile* gluon_pt_resp;
    TProfile* gluon_pt_resp_nGenJetPF;
    TProfile* gluon_nGenPF;
-   TH1D* gluon_nGenPF_w;
+   TProfile* gluon_nGenPF_w;
+
+   TH2D* gluon_nGenPF_probs;
 
     f->GetObject("gluon_pt_resp", gluon_pt_resp);
     f->GetObject("gluon_pt_resp_nGenJetPF", gluon_pt_resp_nGenJetPF);
-    f->GetObject("gluon_nGenPF", gluon_nGenPF);
-    f->GetObject("gluon_nGenPF_w", gluon_nGenPF_w);
+    f->GetObject("gluon_nGenPF_prof", gluon_nGenPF);
+    f->GetObject("gluon_nGenPF_prof_w", gluon_nGenPF_w);
+    f->GetObject("gluon_nGenPF_probs", gluon_nGenPF_probs);
 
    // Quarks
    TProfile* quark_pt_resp;
    TProfile* quark_pt_resp_nGenJetPF;
    TProfile* quark_nGenPF;
-   TH1D* quark_nGenPF_w;
+   TProfile* quark_nGenPF_w;
 
     f->GetObject("quark_pt_resp", quark_pt_resp);
     f->GetObject("quark_pt_resp_nGenJetPF", quark_pt_resp_nGenJetPF);
-    f->GetObject("quark_nGenPF", quark_nGenPF);
-    f->GetObject("quark_nGenPF_w", quark_nGenPF_w);
+    f->GetObject("quark_nGenPF_prof", quark_nGenPF);
+    f->GetObject("quark_nGenPF_prof_w", quark_nGenPF_w);
 
 
     //Pt response
@@ -66,22 +69,6 @@ void drawGluonHistos() {
     h->GetXaxis()->SetMoreLogLabels();
     gPad->SetLogx();
 
-    gluon_nGenPF->SetMarkerColor(kBlue);
-    gluon_nGenPF->SetLineColor(kBlue);
-    gluon_nGenPF->SetLineWidth(2);
-
-    gluon_nGenPF_w->SetMarkerColor(kBlue-5);
-    gluon_nGenPF_w->SetLineColor(kBlue-5);
-    gluon_nGenPF_w->SetLineWidth(2);
-
-    quark_nGenPF->SetMarkerColor(kRed);
-    quark_nGenPF->SetLineColor(kRed);
-    quark_nGenPF->SetLineWidth(2);
-
-    quark_nGenPF_w->SetMarkerColor(kRed-5);
-    quark_nGenPF_w->SetLineColor(kRed-5);
-    quark_nGenPF_w->SetLineWidth(2);
-
     tdrDraw(gluon_nGenPF,"same", kFullCircle, kRed);
     tdrDraw(quark_nGenPF, "same", kOpenCircle, kRed -5);
     tdrDraw(gluon_nGenPF_w, "same", kFullTriangleUp, kBlue);
@@ -97,4 +84,8 @@ void drawGluonHistos() {
     TLatex *tex = new TLatex(); tex->SetNDC();
     tex->SetTextSize(0.04); tex->SetTextColor(kBlack);
     tex->DrawLatex(0.15, 0.6,"|#eta|<1.3");
+
+    //Probablity distributions
+    TCanvas* c3 = new TCanvas("c3","",900,700);
+    gluon_nGenPF_probs->Draw("lego");
 }

@@ -9,6 +9,8 @@
 #include <TProfile.h>
 
 #include <vector>
+#include <ctime>
+#include <chrono>
 
 void GluonHistosFill::Loop()
 {
@@ -35,6 +37,9 @@ void GluonHistosFill::Loop()
 // METHOD2: replace line
 //    fChain->GetEntry(jentry);       //read all branches
 //by  b_branchname->GetEntry(ientry); //read only this branch
+
+auto start = chrono::system_clock::now();
+
    if (fChain == 0) return;
 
    #ifdef SINGLE_TREE
@@ -51,24 +56,30 @@ void GluonHistosFill::Loop()
    const int N2BINS = 100;
    double pfrange[N2BINS+1];
    double probrange[N2BINS+1];     
-   for ( int i = 0; i < N2BINS+1; i++ ) {
+   for ( int i = 0; i < N2BINS+1; ++i ) {
       pfrange[ i ] = i;
-      probrange[i/100];
+      probrange[i] = i/100;
    }
 
    // Gluons
    TProfile* gProf1 = new TProfile("gluon_pt_resp", "", NBINS, ptrange);
    TProfile* gProf2 = new TProfile("gluon_pt_resp_nGenJetPF", "", NBINS, ptrange);
-   TH2D* gHist3 = new TH2D("gluon_nGenPF", "", NBINS, ptrange, N2BINS, pfrange);
-   TH3D* gHist5 = new TH3D("gluon_nGenPF_probs", "", NBINS, ptrange, N2BINS, pfrange, N2BINS, probrange);
-   TH2D* gHist4 = new TH2D("gluon_nGenPF_w", "", NBINS, ptrange, N2BINS, pfrange);
+   TProfile* gProf3 = new TProfile("gluon_nGenPF_prof", "", NBINS, ptrange);
+   TProfile* gProf4 = new TProfile("gluon_nGenPF_prof_w", "", NBINS, ptrange);
+
+   TH2D* gHist3 = new TH2D("gluon_nGenPF_hist", "", NBINS, ptrange, N2BINS, pfrange);
+   TH2D* gHist5 = new TH2D("gluon_nGenPF_probs", "", NBINS, ptrange, N2BINS, pfrange);
+   TH2D* gHist4 = new TH2D("gluon_nGenPF_hist_w", "", NBINS, ptrange, N2BINS, pfrange);
 
    // Quarks
-   TProfile* qHist1 = new TProfile("quark_pt_resp", "", NBINS, ptrange);
-   TProfile* qHist2 = new TProfile("quark_pt_resp_nGenJetPF", "", NBINS, ptrange);
-   TH2D* qHist3 = new TH2D("quark_nGenPF", "", NBINS, ptrange, N2BINS, pfrange);
-   TH3D* qHist5 = new TH3D("quark_nGenPF_probs", "", NBINS, ptrange, N2BINS, pfrange, N2BINS, probrange);
-   TH2D* qHist4 = new TH2D("quark_nGenPF_w", "", NBINS, ptrange, N2BINS, pfrange);
+   TProfile* qProf1 = new TProfile("quark_pt_resp", "", NBINS, ptrange);
+   TProfile* qProf2 = new TProfile("quark_pt_resp_nGenJetPF", "", NBINS, ptrange);
+   TProfile* qProf3 = new TProfile("quark_nGenPF_prof", "", NBINS, ptrange);
+   TProfile* qProf4 = new TProfile("quark_nGenPF_prof_w", "", NBINS, ptrange);
+
+   TH2D* qHist3 = new TH2D("quark_nGenPF_hist", "", NBINS, ptrange, N2BINS, pfrange);
+   TH2D* qHist5 = new TH2D("quark_nGenPF_probs", "", NBINS, ptrange, N2BINS, probrange);
+   TH2D* qHist4 = new TH2D("quark_nGenPF_hist_w", "", NBINS, ptrange, N2BINS, pfrange);
 
    Long64_t nentries = fChain->GetEntriesFast();
 
@@ -83,59 +94,80 @@ void GluonHistosFill::Loop()
             if (isPhysG) {
                gProf1->Fill(jetPt, jetPt/genJetPt);
                gProf2->Fill(jetPt, jetPt/genJetPt, 1./nGenJetPF);
+               gProf3->Fill(jetPt, nGenJetPF);
                gHist3->Fill(jetPt, nGenJetPF);
             }
             else {
                if (isPhysUDS) {
-                  qHist1->Fill(jetPt, jetPt/ genJetPt);
-                  qHist2->Fill(jetPt, jetPt/genJetPt, 1./nGenJetPF);
+                  qProf1->Fill(jetPt, jetPt/ genJetPt);
+                  qProf2->Fill(jetPt, jetPt/genJetPt, 1./nGenJetPF);
+                  qProf3->Fill(jetPt, nGenJetPF);
                   qHist3->Fill(jetPt, nGenJetPF);
                }
             }
       };
    }
+   cout << "first loop done" << endl;
 
    int gPFs;
    int qPFs;
-   double gprob;
-   double qprob;
 
-   for (int xb = 1; xb < NBINS; ++xb) {
+   for (int xb = 1; xb != gHist3->GetNbinsX()+1; ++xb) {
       gPFs = gHist3->Integral(xb, xb, 0, 100);
       qPFs = qHist3->Integral(xb, xb, 0, 100);
-      cout << gPFs << endl;
-      for (int yb = 1; yb < 100; ++yb) {
-         gprob = gHist3->GetBinContent(xb, yb) / gPFs;
-         qprob = gHist3->GetBinContent(xb, yb) / qPFs;
-
-         gHist5->Fill(xb, yb, gprob);
-         qHist5->Fill(xb, yb, qprob);
+      if (gPFs > 0 || qPFs > 0) { 
+         for (int yb = 1; yb != gHist3->GetNbinsY()+1; ++yb) { 
+            if (gPFs > 0) {
+               gHist5->SetBinContent(xb, yb, gHist3->GetBinContent(xb, yb) / gPFs);
+            }
+            if (qPFs > 0) {
+               qHist5->SetBinContent(xb, yb, qHist3->GetBinContent(xb, yb) / qPFs);
+            }
+         }
       }
    }
 
-/*
+   cout << "probability calculated" << endl;
+
+   double w;
+   double gprob;
+   double qprob;
+
    for (Long64_t jentry=0; jentry<nentries;jentry++) {
       Long64_t ientry = LoadTree(jentry);
       if (ientry < 0) break;
       nb = fChain->GetEntry(jentry);   nbytes += nb;
       // if (Cut(ientry) < 0) continue;
 
-      double w;
       if (fabs(jetEta)<1.3 && jetPtOrder<2 && fpclassify(genJetPt) == FP_NORMAL && genJetPt > 0) {
+         w = 1;
+         gprob = gHist5->GetBinContent(jetPt, nGenJetPF);
+         qprob = qHist5->GetBinContent(jetPt, nGenJetPF);
             if (isPhysG) {
-               w = qHist5->GetBinContent(jetPt, nGenJetPF, 1)/gHist5->GetBinContent(jetPt, nGenJetPF, 1);
+               if (gprob > 0) {
+                  w = qprob/gprob;
+               }
                gHist4->Fill(jetPt, nGenJetPF, w);
+               gProf4->Fill(jetPt, nGenJetPF, w);
             }
             else {
                if (isPhysUDS) {
-                  w = gHist5->GetBinContent(jetPt, nGenJetPF, 1)/gHist5->GetBinContent(jetPt, nGenJetPF, 1);
-                  gHist4->Fill(jetPt, nGenJetPF, w);
+                  if (qprob > 0) {
+                     w = gprob/qprob;
+                  }
+                  qHist4->Fill(jetPt, nGenJetPF, w);
+                  qProf4->Fill(jetPt, nGenJetPF, w);
                }
             }
    };
 }
-*/
 
 file->Write();
 file->Close();
+
+auto end = std::chrono::system_clock::now();
+std::chrono::duration<double> elapsed_min = end-start;
+std::time_t end_time = std::chrono::system_clock::to_time_t(end);
+std::cout << "finished at " << std::ctime(&end_time)
+         << "elapsed time: " << elapsed_min.count() << "s\n";
 }
