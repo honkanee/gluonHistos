@@ -140,13 +140,13 @@ auto start = chrono::system_clock::now(); //timer
       // if (Cut(ientry) < 0) continue;
 
       if (fabs(jetEta)<1.3 && jetPtOrder<2 && fpclassify(genJetPt) == FP_NORMAL && genJetPt > 0) {
-         w = 1;
-         gprob = gHist2->GetBinContent(jetPt, nGenJetPF);
-         qprob = qHist2->GetBinContent(jetPt, nGenJetPF);
+         gprob = gHist2->GetBinContent(gHist2->FindBin(jetPt, nGenJetPF));
+         qprob = qHist2->GetBinContent(qHist2->FindBin(jetPt, nGenJetPF));
             if (isPhysG) {
                if (gprob > 0) {
                   w = qprob/gprob;
                }
+               else w = 0;
                gHist3->Fill(jetPt, nGenJetPF, w);
                gProf4->Fill(jetPt, nGenJetPF, w);
             }
@@ -155,6 +155,7 @@ auto start = chrono::system_clock::now(); //timer
                   if (qprob > 0) {
                      w = gprob/qprob;
                   }
+                  else w = 0;
                   qHist3->Fill(jetPt, nGenJetPF, w);
                   qProf4->Fill(jetPt, nGenJetPF, w);
                }
