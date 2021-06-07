@@ -38,7 +38,7 @@ void GluonHistosFill::Loop()
 //    fChain->GetEntry(jentry);       //read all branches
 //by  b_branchname->GetEntry(ientry); //read only this branch
 
-auto start = chrono::system_clock::now();
+auto start = chrono::system_clock::now(); //timer
 
    if (fChain == 0) return;
 
@@ -67,9 +67,9 @@ auto start = chrono::system_clock::now();
    TProfile* gProf3 = new TProfile("gluon_nGenPF_prof", "", NBINS, ptrange);
    TProfile* gProf4 = new TProfile("gluon_nGenPF_prof_w", "", NBINS, ptrange);
 
-   TH2D* gHist3 = new TH2D("gluon_nGenPF_hist", "", NBINS, ptrange, N2BINS, pfrange);
-   TH2D* gHist5 = new TH2D("gluon_nGenPF_probs", "", NBINS, ptrange, N2BINS, pfrange);
-   TH2D* gHist4 = new TH2D("gluon_nGenPF_hist_w", "", NBINS, ptrange, N2BINS, pfrange);
+   TH2D* gHist1 = new TH2D("gluon_nGenPF_hist", "", NBINS, ptrange, N2BINS, pfrange);
+   TH2D* gHist2 = new TH2D("gluon_nGenPF_probs", "", NBINS, ptrange, N2BINS, pfrange);
+   TH2D* gHist3 = new TH2D("gluon_nGenPF_hist_w", "", NBINS, ptrange, N2BINS, pfrange);
 
    // Quarks
    TProfile* qProf1 = new TProfile("quark_pt_resp", "", NBINS, ptrange);
@@ -77,9 +77,9 @@ auto start = chrono::system_clock::now();
    TProfile* qProf3 = new TProfile("quark_nGenPF_prof", "", NBINS, ptrange);
    TProfile* qProf4 = new TProfile("quark_nGenPF_prof_w", "", NBINS, ptrange);
 
-   TH2D* qHist3 = new TH2D("quark_nGenPF_hist", "", NBINS, ptrange, N2BINS, pfrange);
-   TH2D* qHist5 = new TH2D("quark_nGenPF_probs", "", NBINS, ptrange, N2BINS, probrange);
-   TH2D* qHist4 = new TH2D("quark_nGenPF_hist_w", "", NBINS, ptrange, N2BINS, pfrange);
+   TH2D* qHist1 = new TH2D("quark_nGenPF_hist", "", NBINS, ptrange, N2BINS, pfrange);
+   TH2D* qHist2 = new TH2D("quark_nGenPF_probs", "", NBINS, ptrange, N2BINS, pfrange);
+   TH2D* qHist3 = new TH2D("quark_nGenPF_hist_w", "", NBINS, ptrange, N2BINS, pfrange);
 
    Long64_t nentries = fChain->GetEntriesFast();
 
@@ -95,14 +95,14 @@ auto start = chrono::system_clock::now();
                gProf1->Fill(jetPt, jetPt/genJetPt);
                gProf2->Fill(jetPt, jetPt/genJetPt, 1./nGenJetPF);
                gProf3->Fill(jetPt, nGenJetPF);
-               gHist3->Fill(jetPt, nGenJetPF);
+               gHist1->Fill(jetPt, nGenJetPF);
             }
             else {
                if (isPhysUDS) {
                   qProf1->Fill(jetPt, jetPt/ genJetPt);
                   qProf2->Fill(jetPt, jetPt/genJetPt, 1./nGenJetPF);
                   qProf3->Fill(jetPt, nGenJetPF);
-                  qHist3->Fill(jetPt, nGenJetPF);
+                  qHist1->Fill(jetPt, nGenJetPF);
                }
             }
       };
@@ -112,16 +112,16 @@ auto start = chrono::system_clock::now();
    int gPFs;
    int qPFs;
 
-   for (int xb = 1; xb != gHist3->GetNbinsX()+1; ++xb) {
-      gPFs = gHist3->Integral(xb, xb, 0, 100);
-      qPFs = qHist3->Integral(xb, xb, 0, 100);
+   for (int xb = 1; xb != gHist1->GetNbinsX()+1; ++xb) {
+      gPFs = gHist1->Integral(xb, xb, 0, 100);
+      qPFs = qHist1->Integral(xb, xb, 0, 100);
       if (gPFs > 0 || qPFs > 0) { 
-         for (int yb = 1; yb != gHist3->GetNbinsY()+1; ++yb) { 
+         for (int yb = 1; yb != gHist1->GetNbinsY()+1; ++yb) { 
             if (gPFs > 0) {
-               gHist5->SetBinContent(xb, yb, gHist3->GetBinContent(xb, yb) / gPFs);
+               gHist2->SetBinContent(xb, yb, gHist1->GetBinContent(xb, yb) / gPFs);
             }
             if (qPFs > 0) {
-               qHist5->SetBinContent(xb, yb, qHist3->GetBinContent(xb, yb) / qPFs);
+               qHist2->SetBinContent(xb, yb, qHist1->GetBinContent(xb, yb) / qPFs);
             }
          }
       }
@@ -141,13 +141,13 @@ auto start = chrono::system_clock::now();
 
       if (fabs(jetEta)<1.3 && jetPtOrder<2 && fpclassify(genJetPt) == FP_NORMAL && genJetPt > 0) {
          w = 1;
-         gprob = gHist5->GetBinContent(jetPt, nGenJetPF);
-         qprob = qHist5->GetBinContent(jetPt, nGenJetPF);
+         gprob = gHist2->GetBinContent(jetPt, nGenJetPF);
+         qprob = qHist2->GetBinContent(jetPt, nGenJetPF);
             if (isPhysG) {
                if (gprob > 0) {
                   w = qprob/gprob;
                }
-               gHist4->Fill(jetPt, nGenJetPF, w);
+               gHist3->Fill(jetPt, nGenJetPF, w);
                gProf4->Fill(jetPt, nGenJetPF, w);
             }
             else {
@@ -155,7 +155,7 @@ auto start = chrono::system_clock::now();
                   if (qprob > 0) {
                      w = gprob/qprob;
                   }
-                  qHist4->Fill(jetPt, nGenJetPF, w);
+                  qHist3->Fill(jetPt, nGenJetPF, w);
                   qProf4->Fill(jetPt, nGenJetPF, w);
                }
             }
@@ -165,9 +165,11 @@ auto start = chrono::system_clock::now();
 file->Write();
 file->Close();
 
+
+// timer
 auto end = std::chrono::system_clock::now();
-std::chrono::duration<double> elapsed_min = end-start;
+std::chrono::duration<double> elapsed_sec = end-start;
 std::time_t end_time = std::chrono::system_clock::to_time_t(end);
 std::cout << "finished at " << std::ctime(&end_time)
-         << "elapsed time: " << elapsed_min.count() << "s\n";
+         << "elapsed time: " << elapsed_sec.count()/60 << "min";
 }

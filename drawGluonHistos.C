@@ -11,15 +11,15 @@
 void drawGluonHistos() {
     setTDRStyle();
 
-    TFile* f = TFile::Open("outputGluonHistos_single.root");
+    TFile* f = TFile::Open("outputGluonHistos.root");
 
     // Gluons
-   TProfile* gluon_pt_resp;
-   TProfile* gluon_pt_resp_nGenJetPF;
-   TProfile* gluon_nGenPF;
-   TProfile* gluon_nGenPF_w;
+    TProfile* gluon_pt_resp;
+    TProfile* gluon_pt_resp_nGenJetPF;
+    TProfile* gluon_nGenPF;
+    TProfile* gluon_nGenPF_w;
 
-   TH2D* gluon_nGenPF_probs;
+    TH2D* gluon_nGenPF_probs;
 
     f->GetObject("gluon_pt_resp", gluon_pt_resp);
     f->GetObject("gluon_pt_resp_nGenJetPF", gluon_pt_resp_nGenJetPF);
@@ -27,17 +27,19 @@ void drawGluonHistos() {
     f->GetObject("gluon_nGenPF_prof_w", gluon_nGenPF_w);
     f->GetObject("gluon_nGenPF_probs", gluon_nGenPF_probs);
 
-   // Quarks
-   TProfile* quark_pt_resp;
-   TProfile* quark_pt_resp_nGenJetPF;
-   TProfile* quark_nGenPF;
-   TProfile* quark_nGenPF_w;
+    // Quarks
+    TProfile* quark_pt_resp;
+    TProfile* quark_pt_resp_nGenJetPF;
+    TProfile* quark_nGenPF;
+    TProfile* quark_nGenPF_w;
+
+    TH2D* quark_nGenPF_probs;
 
     f->GetObject("quark_pt_resp", quark_pt_resp);
     f->GetObject("quark_pt_resp_nGenJetPF", quark_pt_resp_nGenJetPF);
     f->GetObject("quark_nGenPF_prof", quark_nGenPF);
     f->GetObject("quark_nGenPF_prof_w", quark_nGenPF_w);
-
+    f->GetObject("quark_nGenPF_probs", quark_nGenPF_probs);
 
     //Pt response
     TCanvas* c = new TCanvas("c","",900,700);
@@ -61,7 +63,7 @@ void drawGluonHistos() {
     quark_pt_resp->Draw("same");
 
 
-    //nGenJetPF
+    //nGenJetPF profiles
     TH1D* h = tdrHist("h", "nGenPF", 10, 70,
     "p_{T} (GeV)", 30, 3500);
     h->GetXaxis()->SetNoExponent();
@@ -86,6 +88,33 @@ void drawGluonHistos() {
     tex->DrawLatex(0.15, 0.6,"|#eta|<1.3");
 
     //Probablity distributions
-    TCanvas* c3 = new TCanvas("c3","",900,700);
-    gluon_nGenPF_probs->Draw("lego");
+    TCanvas* c3 = new TCanvas("c3","c3",1400,700);
+    c3->Divide(2,1);
+
+    c3->cd(1);
+    gluon_nGenPF_probs->SetAxisRange(30, 3500, "X");
+    gPad->SetLogx();
+    gluon_nGenPF_probs->GetXaxis()->SetTitle("pT (GeV)");
+    gluon_nGenPF_probs->GetYaxis()->SetTitle("nGenPF");
+    gluon_nGenPF_probs->GetZaxis()->SetTitle("prob");
+    gluon_nGenPF_probs->SetAxisRange(0,0.1,"Z");
+    gluon_nGenPF_probs->SetTitle("gluons");
+    gluon_nGenPF_probs->Draw("lego2");
+
+    TText *gt = new TText(0.5, 0.5, "gluons");
+    gt->Draw();
+
+    c3->cd(2);
+    quark_nGenPF_probs->SetAxisRange(30, 3500,"X");
+    gPad->SetLogx();
+    quark_nGenPF_probs->GetXaxis()->SetTitle("pT (GeV)");
+    quark_nGenPF_probs->GetYaxis()->SetTitle("nGenPF");
+    quark_nGenPF_probs->GetZaxis()->SetTitle("prob");
+    quark_nGenPF_probs->SetAxisRange(0,0.1, "Z");
+    quark_nGenPF_probs->SetTitle("quarks");
+    quark_nGenPF_probs->Draw("lego2");
+
+    
+    TText *qt = new TText(0.5, 0.5, "quarks");
+    qt->Draw();
 }
