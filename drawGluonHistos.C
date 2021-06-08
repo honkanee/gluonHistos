@@ -72,8 +72,8 @@ void drawGluonHistos() {
     gPad->SetLogx();
 
     tdrDraw(gluon_nGenPF,"same", kFullCircle, kRed);
-    tdrDraw(quark_nGenPF, "same", kOpenCircle, kRed -5);
-    tdrDraw(gluon_nGenPF_w, "same", kFullTriangleUp, kBlue);
+    tdrDraw(quark_nGenPF, "same", kFullCircle, kBlue);
+    tdrDraw(gluon_nGenPF_w, "same", kOpenTriangleUp, kRed -5);
     tdrDraw(quark_nGenPF_w, "same", kOpenTriangleUp, kBlue -5);
 
     TLegend *leg1 = tdrLeg(0.37,0.90-5*0.045,0.57,0.90);
