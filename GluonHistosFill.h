@@ -8,6 +8,7 @@
 #define GluonHistosFill_h
 
 //#define SINGLE_TREE
+//#define RECREATE_WEIGHTS
 
 #include <iostream>
 #include <TROOT.h>
@@ -174,6 +175,7 @@ public :
    virtual void     Loop();
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
+   void             FillWeightHistos(int nptbins, double* ptrange, int npfbins, double* pfrange);
 };
 
 #endif
@@ -756,4 +758,5 @@ Int_t GluonHistosFill::Cut(Long64_t entry)
 // returns -1 otherwise.
    return 1;
 }
+
 #endif // #ifdef GluonHistosFill_cxx

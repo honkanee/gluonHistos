@@ -11,7 +11,7 @@
 void drawGluonHistos() {
     setTDRStyle();
 
-    TFile* f = TFile::Open("outputGluonHistos_single.root");
+    TFile* f = TFile::Open("outputGluonHistos2.root");
 
     // Gluons
     TProfile* gluon_pt_resp;
@@ -45,11 +45,12 @@ void drawGluonHistos() {
     f->GetObject("quark_nGenPF_probs", quark_nGenPF_probs);
     f->GetObject("quark_pt_resp_nGenJetPF_w", quark_pt_resp_nGenJetPF_w);
 
+
     //Pt response
     TH1D* h = tdrHist("h", "nGenPF", 0.8, 1.2,
     "p_{T} (GeV)", 30, 3500);
     h->GetXaxis()->SetNoExponent();
-    TCanvas* c = tdrCanvas("c", h, 4);
+    TCanvas* c = tdrCanvas("c", h, 4, 11, kSquare);
     h->GetXaxis()->SetMoreLogLabels();
     gPad->SetLogx();
 
@@ -58,7 +59,7 @@ void drawGluonHistos() {
     tdrDraw(gluon_pt_resp_nGenJetPF_w, "", kOpenTriangleUp, kGreen);
     tdrDraw(quark_pt_resp, "", kFullCircle, kBlue);
     tdrDraw(quark_pt_resp_nGenJetPF, "", kOpenCircle, kBlue);
-    tdrDraw(quark_pt_resp_nGenJetPF, "", kOpenTriangleUp, kYellow);
+    tdrDraw(quark_pt_resp_nGenJetPF_w, "", kOpenTriangleUp, kYellow);
 
     TLatex *tex = new TLatex(); tex->SetNDC();
     tex->SetTextSize(0.05); tex->SetTextColor(kBlack);
@@ -67,7 +68,7 @@ void drawGluonHistos() {
     //nGenJetPF profiles
     TH1D* h2 = tdrHist("h2", "nGenPF", 10, 70,
     "p_{T} (GeV)", 30, 3500);
-    TCanvas* c2 = tdrCanvas("c2", h2, 4);
+    tdrCanvas("c2", h2, 4, 11,  kSquare);
     gPad->SetLogx();
 
     tdrDraw(gluon_nGenPF,"", kFullCircle, kRed);
