@@ -21,6 +21,7 @@ void drawGluonHistos() {
     TProfile* gluon_pt_resp_nGenJetPF_w;
 
     TH2D* gluon_nGenPF_probs;
+    TH2D* gluon_genJetMass;
 
     f->GetObject("gluon_pt_resp", gluon_pt_resp);
     f->GetObject("gluon_pt_resp_nGenJetPF", gluon_pt_resp_nGenJetPF);
@@ -28,6 +29,7 @@ void drawGluonHistos() {
     f->GetObject("gluon_nGenPF_prof_w", gluon_nGenPF_w);
     f->GetObject("gluon_nGenPF_probs_smooth", gluon_nGenPF_probs);
     f->GetObject("gluon_pt_resp_nGenJetPF_w", gluon_pt_resp_nGenJetPF_w);
+    f->GetObject("gluon_genJetMass", gluon_genJetMass);
 
     // Quarks
     TProfile* quark_pt_resp;
@@ -37,6 +39,7 @@ void drawGluonHistos() {
     TProfile* quark_pt_resp_nGenJetPF_w;
 
     TH2D* quark_nGenPF_probs;
+    TH2D* quark_genJetMass;
 
     f->GetObject("quark_pt_resp", quark_pt_resp);
     f->GetObject("quark_pt_resp_nGenJetPF", quark_pt_resp_nGenJetPF);
@@ -44,7 +47,7 @@ void drawGluonHistos() {
     f->GetObject("quark_nGenPF_prof_w", quark_nGenPF_w);
     f->GetObject("quark_nGenPF_probs_smooth", quark_nGenPF_probs);
     f->GetObject("quark_pt_resp_nGenJetPF_w", quark_pt_resp_nGenJetPF_w);
-
+    f->GetObject("quark_genJetMass", quark_genJetMass);
 
     //Pt response
     TH1D* h = tdrHist("h", "Response", 0.9, 1.2,
@@ -55,19 +58,15 @@ void drawGluonHistos() {
     gPad->SetLogx();
 
     tdrDraw(gluon_pt_resp, "", kFullCircle, kRed);
-//    tdrDraw(gluon_pt_resp_nGenJetPF, "", kOpenCircle, kRed);
     tdrDraw(gluon_pt_resp_nGenJetPF_w, "", kOpenTriangleUp, kRed);
     tdrDraw(quark_pt_resp, "", kFullCircle, kBlue);
-//    tdrDraw(quark_pt_resp_nGenJetPF, "", kOpenCircle, kBlue);
     tdrDraw(quark_pt_resp_nGenJetPF_w, "", kOpenTriangleUp, kBlue);
 
     TLegend *leg1 = tdrLeg(0.37,0.90-6*0.045,0.57,0.90);
     leg1->AddEntry(gluon_pt_resp, "Gluons", "PLE");
     leg1->AddEntry(quark_pt_resp, "Quarks", "PLE");
-    leg1->AddEntry(gluon_pt_resp_nGenJetPF, "Gluons, w", "PLE");
-    leg1->AddEntry(quark_pt_resp_nGenJetPF, "Quarks, w", "PLE");
-    leg1->AddEntry(gluon_pt_resp_nGenJetPF_w, "Gluons", "PLE");
-    leg1->AddEntry(quark_pt_resp_nGenJetPF_w, "Quarks", "PLE");
+    leg1->AddEntry(gluon_pt_resp_nGenJetPF_w, "Gluons weighted", "PLE");
+    leg1->AddEntry(quark_pt_resp_nGenJetPF_w, "Quarks weighted", "PLE");
 
     TLatex *tex = new TLatex(); tex->SetNDC();
     tex->SetTextSize(0.05); tex->SetTextColor(kBlack);
@@ -91,8 +90,8 @@ void drawGluonHistos() {
     TLegend *leg2 = tdrLeg(0.37,0.90-5*0.045,0.57,0.90);
     leg2->AddEntry(gluon_nGenPF, "Gluons", "PLE");
     leg2->AddEntry(quark_nGenPF, "Quarks", "PLE");
-    leg2->AddEntry(gluon_nGenPF_w, "Gluons weighted", "PLE");
-    leg2->AddEntry(quark_nGenPF_w, "Quarks weighted", "PLE");
+    leg2->AddEntry(gluon_nGenPF_w, "Gluons, w", "PLE");
+    leg2->AddEntry(quark_nGenPF_w, "Quarks, w", "PLE");
 
     tex->DrawLatex(0.15, 0.95,"|#eta|<1.3");
 
@@ -127,7 +126,7 @@ void drawGluonHistos() {
     TText *qt = new TText(0.5, 0.5, "quarks");
     qt->Draw();
 
-    //Probablity distributions 2D
+    //nGenJet probablity distributions 2D
     TCanvas* c4 = new TCanvas("c4","c4",1400,700);
     c4->Divide(2,1);
 
@@ -152,4 +151,23 @@ void drawGluonHistos() {
     quark_nGenPF_probs->Draw("colz2");
 
     qt->Draw();
+
+    //genJetMass
+    TCanvas* c5 = new TCanvas("c5","c5",1400,700);
+    c5->Divide(2,1);
+
+    c5->cd(1);
+    gluon_genJetMass->GetXaxis()->SetTitle("p_{T} (GeV)");
+    gluon_genJetMass->GetYaxis()->SetTitle("genJetMass");
+    gluon_genJetMass->SetAxisRange(30, 3500, "X");
+    gPad->SetLogx();
+    gluon_genJetMass->Draw("lego2");
+
+    c5->cd(2);
+    quark_genJetMass->GetXaxis()->SetTitle("p_{T} (GeV");
+    quark_genJetMass->GetYaxis()->SetTitle("p_{T} (GeV)");
+    quark_genJetMass->SetAxisRange(30, 3500, "X");
+    gPad->SetLogx();
+    quark_genJetMass->Draw("lego2");
+    
 }
