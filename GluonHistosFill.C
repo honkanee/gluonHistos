@@ -45,9 +45,9 @@ void GluonHistosFill::Loop()
    };
 */
 
-   const int NBINS = 64;
+   const int NBINS = 62;
    double ptrange[NBINS+1] = {
-      1, 5, 6, 8, 10, 12, 15, 18, 21, 24, 28, 32, 37, 43, 49, 56, 64, 74, 84, 97, 114, 133, 153, 174, 196, 220, 245, 272, 300, 330, 362, 395, 430, 468, 507, 548, 592, 638, 686, 737, 790, 846, 905, 967, 1032, 1101, 1172, 1248, 1327, 1410, 1588, 1784, 2000, 2238, 2500, 2787, 3103, 3450, 3832, 4252, 4713, 5220, 5777, 6389, 7000
+      1, 5, 6, 8, 10, 12, 15, 18, 21, 24, 28, 32, 37, 43, 49, 56, 64, 74, 84, 97, 114, 133, 153, 174, 196, 220, 245, 272, 300, 330, 362, 395, 430, 468, 507, 548, 592, 638, 686, 737, 790, 846, 905, 967, 1032, 1101, 1172, 1248, 1327, 1410, 1588, 1784, 2000, 2238, 2500, 3500, 3832, 4252, 4713, 5220, 5777, 6389, 7000
    };
 
    const  int NPFBINS = 200;
@@ -65,12 +65,16 @@ void GluonHistosFill::Loop()
    #ifdef RECREATE_WEIGHTS
    FillWeightHistos(NBINS, ptrange, NPFBINS, pfrange);
    #endif
-   
+
    TFile* f = TFile::Open("weightHistos.root");
    TH2D* gHist2;
    TH2D* qHist2;
+   TH2D* gHist2_smooth;
+   TH2D* qHist2_smooth;
    f->GetObject("gluon_nGenPF_probs", gHist2);
    f->GetObject("quark_nGenPF_probs", qHist2);
+   f->GetObject("gluon_probs_smooth", gHist2_smooth);
+   f->GetObject("quark_probs_smooth", qHist2_smooth);
 
    #ifdef SINGLE_TREE
    TFile* file = new TFile("outputGluonHistos_single.root", "recreate");
@@ -86,8 +90,10 @@ void GluonHistosFill::Loop()
    TProfile* gProf5 = new TProfile("gluon_pt_resp_nGenJetPF_w", "", NBINS, ptrange);
 
    TH2D* gHist3 = new TH2D("gluon_nGenPF_hist_w", "", NBINS, ptrange, NPFBINS, pfrange);
-
    TH1D* gHist4 = new TH1D("gluons_per_pt_bin", "", NBINS, ptrange);
+   TH2D* gHist5 = new TH2D("gluon_genJetMass", "", NBINS, ptrange, NPFBINS, pfrange);
+   TH2D* gHist6 = new TH2D("gluon_jetGirth", "", NBINS, ptrange, 100, 0., 0.5);
+//   TH2D* gHist6 = new TH2D("gluon_")
 
    // Quarks
    TProfile* qProf1 = new TProfile("quark_pt_resp", "", NBINS, ptrange);
@@ -97,11 +103,15 @@ void GluonHistosFill::Loop()
    TProfile* qProf5 = new TProfile("quark_pt_resp_nGenJetPF_w", "", NBINS, ptrange);
 
    TH2D* qHist3 = new TH2D("quark_nGenPF_hist_w", "", NBINS, ptrange, NPFBINS, pfrange);
-
    TH1D* qHist4 = new TH1D("quarks_per_pt_bin", "", NBINS, ptrange);
+   TH2D* qHist5 = new TH2D("quark_genJetMass", "", NBINS, ptrange, NPFBINS, pfrange);
+   TH2D* qHist6 = new TH2D("quark_jetGirth", "", NBINS, ptrange, 100, 0., 0.5);
 
-   gHist2->Clone("gluon_nGenPF_probs");
-   qHist2->Clone("quark_nGenPF_probs");
+   //From weightHistos.root to outputHIstos.root
+   TH2D* gHist2_clone = (TH2D*)gHist2->Clone("gluon_nGenPF_probs");
+   TH2D* qHist2_clone = (TH2D*)qHist2->Clone("quark_nGenPF_probs");
+   TH2D* gHist2_smooth_clone = (TH2D*)gHist2_smooth->Clone("gluon_nGenPF_probs_smooth");
+   TH2D* qHist2_smooth_clone = (TH2D*)qHist2_smooth->Clone("quark_nGenPF_probs_smooth");
 
    double w;
    double gprob;
@@ -115,13 +125,15 @@ void GluonHistosFill::Loop()
       nb = fChain->GetEntry(jentry);   nbytes += nb;
       // if (Cut(ientry) < 0) continue;
       if (fabs(jetEta)<1.3 && jetPtOrder<2 && fpclassify(genJetPt) == FP_NORMAL && genJetPt > 0) {
-         gprob = gHist2->GetBinContent(gHist2->FindBin(jetPt, nGenJetPF));
-         qprob = qHist2->GetBinContent(qHist2->FindBin(jetPt, nGenJetPF));
+         gprob = gHist2->GetBinContent(gHist2_smooth->FindBin(jetPt, nGenJetPF));
+         qprob = qHist2->GetBinContent(qHist2_smooth->FindBin(jetPt, nGenJetPF));
             if (isPhysG) {
                gProf1->Fill(jetPt, jetPt/genJetPt);
                gProf2->Fill(jetPt, jetPt/genJetPt, 1./nGenJetPF);
                gProf3->Fill(jetPt, nGenJetPF);
                gHist4->Fill(jetPt);
+               gHist5->Fill(jetPt, genJetMass);
+               gHist6->Fill(jetPt, jetGirth);
                if (gprob > 0 && qprob > 0) {
                   w = qprob/gprob;
                   gProf5->Fill(jetPt, jetPt/genJetPt, w);
@@ -136,6 +148,8 @@ void GluonHistosFill::Loop()
                   qProf2->Fill(jetPt, jetPt/genJetPt, 1./nGenJetPF);
                   qProf3->Fill(jetPt, nGenJetPF);
                   qHist4->Fill(jetPt);
+                  qHist5->Fill(jetPt, genJetMass);
+                  qHist6->Fill(jetPt, jetGirth);
                   if (gprob > 0 && qprob > 0) {
                      w = gprob/qprob;
                      qProf5->Fill(jetPt, jetPt/genJetPt, w);
@@ -194,7 +208,7 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
       gPFs = gHist1->Integral(xb, xb, 0, 100);
       qPFs = qHist1->Integral(xb, xb, 0, 100);
       if (gPFs > 0 || qPFs > 0) { 
-         for (int yb = 1; yb != gHist1->GetNbinsY()+1; ++yb) { 
+         for (int yb = 1; yb != gHist1->GetNbinsY()+1; ++yb) {
             if (gPFs > 0) {
                gHist2->SetBinContent(xb, yb, gHist1->GetBinContent(xb, yb) / gPFs);
             }
@@ -206,12 +220,16 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
    }
 
    TH2D* gprobs_smooth = (TH2D*)gHist2->Clone("gluon_probs_smooth");
-   gprobs_smooth->Smooth();
+//   gprobs_smooth->SetAxisRange(2000, 3500, "X");
+   gprobs_smooth->Smooth(1, "k5b");
 
-   TH2D* qprobs_smooth = (TH2D*)gHist2->Clone("quark_probs_smooth");
-   qprobs_smooth->Smooth();
+   TH2D* qprobs_smooth = (TH2D*)qHist2->Clone("quark_probs_smooth");
+//   qprobs_smooth->SetAxisRange(2000, 3500, "X");
+   qprobs_smooth->Smooth(1, "k5b");
 
    cout << "probability calculated" << endl;
+
+   TFile* f = TFile::Open("outputGluonHistos.root");
 
    file->Write();
    file->Close();

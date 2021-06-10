@@ -8,7 +8,7 @@
 #define GluonHistosFill_h
 
 //#define SINGLE_TREE
-//#define RECREATE_WEIGHTS
+#define RECREATE_WEIGHTS
 
 #include <iostream>
 #include <TROOT.h>
