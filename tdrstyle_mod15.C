@@ -58,7 +58,7 @@ void tdrDraw(TGraph* g, string opt,
 }
 
 TLegend *tdrLeg(double x1, double y1, double x2, double y2) {
-  TLegend *leg = new TLegend(x1, y1, x2, y2, "", "PLE");
+  TLegend *leg = new TLegend(x1, y1, x2, y2, "", "brNDC");
   leg->SetFillStyle(kNone);
   leg->SetBorderSize(0);
   leg->SetTextSize(0.045);
