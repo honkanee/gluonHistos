@@ -11,7 +11,7 @@
 void drawGluonHistos() {
     setTDRStyle();
 
-    TFile* f = TFile::Open("outputGluonHistos.root");
+    TFile* f = TFile::Open("outputGluonHistos_single.root");
 
     // Gluons
     TProfile* gluon_pt_resp;
@@ -31,6 +31,9 @@ void drawGluonHistos() {
     f->GetObject("gluon_pt_resp_nGenJetPF_w", gluon_pt_resp_nGenJetPF_w);
     f->GetObject("gluon_genJetMass", gluon_genJetMass);
 
+    //From weightHistos
+    TFile* f2 = TFile::Open("outputGluonHistos.root");
+
     // Quarks
     TProfile* quark_pt_resp;
     TProfile* quark_pt_resp_nGenJetPF;
@@ -48,6 +51,10 @@ void drawGluonHistos() {
     f->GetObject("quark_nGenPF_probs_smooth", quark_nGenPF_probs);
     f->GetObject("quark_pt_resp_nGenJetPF_w", quark_pt_resp_nGenJetPF_w);
     f->GetObject("quark_genJetMass", quark_genJetMass);
+
+    TH2D* nGenJetPF_likelyhood;
+
+    f->GetObject("nGenJetPF_likelyhood", nGenJetPF_likelyhood);
 
     //Pt response
     TH1D* h = tdrHist("h", "Response", 0.9, 1.2,
@@ -152,6 +159,19 @@ void drawGluonHistos() {
 
     qt->Draw();
 
+    TH1D* h3 = tdrHist("h3", "nGenPF", 10, 70,
+    "p_{T} (GeV)", 30, 3500);
+    h3->GetXaxis()->SetNoExponent();
+    h3->GetXaxis()->SetMoreLogLabels();
+    tdrCanvas("c6", h3, 4, 11,  kSquare);
+    gPad->SetLogx();
+
+    nGenJetPF_likelyhood->SetAxisRange(30, 3500, "X");
+    nGenJetPF_likelyhood->SetAxisRange(0, 150, "Y");
+    nGenJetPF_likelyhood->Draw("colz");
+
+
+/*
     //genJetMass
     TCanvas* c5 = new TCanvas("c5","c5",1400,700);
     c5->Divide(2,1);
@@ -169,5 +189,5 @@ void drawGluonHistos() {
     quark_genJetMass->SetAxisRange(30, 3500, "X");
     gPad->SetLogx();
     quark_genJetMass->Draw("lego2");
-    
+    */
 }

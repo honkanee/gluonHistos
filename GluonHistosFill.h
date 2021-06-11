@@ -7,10 +7,12 @@
 #ifndef GluonHistosFill_h
 #define GluonHistosFill_h
 
-//#define SINGLE_TREE
-#define RECREATE_WEIGHTS
+#define SINGLE_TREE
+//#define RECREATE_WEIGHTS
 
 #include <iostream>
+
+#include <TH2.h>
 #include <TROOT.h>
 #include <TChain.h>
 #include <TFile.h>
@@ -175,7 +177,8 @@ public :
    virtual void     Loop();
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
-   void             FillWeightHistos(int nptbins, double* ptrange, int npfbins, double* pfrange);
+   void             FillWeightHistos(int nptbins, double* ptrange, int npfbins, double* pfrange, int nMassBins, double* massrange);
+   void             CalculateProbs(TH2D* gHist, TH2D* qHist, TH2D* gProbs, TH2D* qProbs);
 };
 
 #endif
