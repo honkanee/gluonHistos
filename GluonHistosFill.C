@@ -111,18 +111,16 @@ void GluonHistosFill::Loop()
 
    TH2D* nGenJetPF_probsRatio = new TH2D("nGenJetPF_likelyhood", "", NBINS, ptrange, NPFBINS, pfrange);
 
-   //From weightHistos.root to outputHIstos.root
-   TH2D* gHist2_clone = (TH2D*)gHist2->Clone("gluon_nGenPF_probs");
-   TH2D* qHist2_clone = (TH2D*)qHist2->Clone("quark_nGenPF_probs");
-   TH2D* gHist2_smooth_clone = (TH2D*)gHist2_smooth->Clone("gluon_nGenPF_probs_smooth");
-   TH2D* qHist2_smooth_clone = (TH2D*)qHist2_smooth->Clone("quark_nGenPF_probs_smooth");
+   TH2D* nGenPF_probs_sum = (TH2D*)gHist2_smooth->Clone("nGenPF_probs_sum");
 
-   gHist2_smooth->Add(qHist2_smooth_clone);
-   nGenJetPF_probsRatio->Divide(qHist2_smooth_clone, gHist2_smooth);
+//   nGenPF_probs_sum->Add(qHist2_smooth);
+   nGenJetPF_probsRatio->Divide(qHist2_smooth, nGenPF_probs_sum);
 
    for (int xb = 1; xb != nGenJetPF_probsRatio->GetNbinsX()+1; ++xb) {
       for(int yb = 1; yb != nGenJetPF_probsRatio->GetNbinsY()+1; ++yb) {
-            nGenJetPF_probsRatio->SetBinContent(xb, yb, (nGenJetPF_probsRatio->GetBinContent(xb, yb)-0.5)*2);
+            //nGenJetPF_probsRatio->SetBinContent(xb, yb, (nGenJetPF_probsRatio->GetBinContent(xb, yb)-0.5)*2);
+            nGenJetPF_probsRatio->SetBinContent(xb, yb, nGenJetPF_probsRatio->GetBinContent(xb, yb)-1);
+
       }
    }
 
@@ -181,8 +179,11 @@ f->Close();
 
 void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins, double* pfrange, int nMassBins, double* massrange)
 {
-
+   #ifdef SINGLE_TREE
+   TFile* file = new TFile("./weightHistos_single.root", "recreate");
+   #else
    TFile* file = new TFile("./weightHistos.root", "recreate");
+   #endif
 
    //Gluon
    TH2D* gNGenPF = new TH2D("gluon_nGenPF_hist", "", nptbins, ptrange, npfbins, pfrange);
@@ -202,6 +203,14 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
    TH2D* qGenJetMass_probs = new TH2D("quark_genJetMass_probs", "", nptbins, ptrange, nMassBins, massrange);
    TH2D* qJetGirth_probs = new TH2D("quarks_jetGirth_probs", "", nptbins, ptrange, 100, 0., 0.5);
 
+   int nGenPFsum;
+   double nUEPF_per_A;
+   double nUEPF;
+   double dR_in = 0.8;
+   double dR_out = 1.0;
+   TH2D* UEPFs = new TH2D("UE_nPF", "", nptbins, ptrange, npfbins, pfrange);
+   TH2D* UEPF_probs = new TH2D("UE_nPF_probs", "", nptbins, ptrange, npfbins, pfrange);
+
    Long64_t nentries = fChain->GetEntriesFast();
    Long64_t nbytes = 0, nb = 0;
    for (Long64_t jentry=0; jentry<nentries;jentry++) {
@@ -211,20 +220,43 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
       // if (Cut(ientry) < 0) continue;
 
       if (fabs(jetEta)<1.3 && jetPtOrder<2 && fpclassify(genJetPt) == FP_NORMAL && genJetPt > 0) {
-            if (isPhysG) {
-               gNGenPF->Fill(jetPt, nGenJetPF);
-               gGenJetMass->Fill(jetPt, genJetMass);
-               gJetGirth->Fill(jetPt, jetGirth);
-            }
-            else {
-               if (isPhysUDS) {
-                  qNGenPF->Fill(jetPt, nGenJetPF);
-                  qGenJetMass->Fill(jetPt, genJetMass);
-                  qJetGirth->Fill(jetPt, jetGirth);
+         if (isPhysG) {
+            gNGenPF->Fill(jetPt, nGenJetPF);
+            gGenJetMass->Fill(jetPt, genJetMass);
+            gJetGirth->Fill(jetPt, jetGirth);
+            nGenPFsum = 0;
+            for (Float_t p : PF_dR) {
+               if (p > dR_in && p < dR_out) {
+                  ++nGenPFsum;
                }
             }
+            nUEPF_per_A = nGenPFsum / (M_PI * (dR_out*dR_out - dR_in*dR_in));
+            nUEPF = jetArea*nUEPF_per_A;
+            UEPFs->Fill(jetPt, nGenPFsum);
+         }
+         else {
+            if (isPhysUDS) {
+               qNGenPF->Fill(jetPt, nGenJetPF);
+               qGenJetMass->Fill(jetPt, genJetMass);
+               qJetGirth->Fill(jetPt, jetGirth);
+               nGenPFsum = 0;
+               for (auto p : PF_dR) {
+                  if (p > dR_in && p < dR_out) {
+                     ++nGenPFsum;
+                  }
+               }
+               nUEPF_per_A = nGenPFsum / (M_PI * (dR_out*dR_out - dR_in*dR_in));
+               nUEPF = jetArea*nUEPF_per_A;
+               UEPFs->Fill(jetPt, nGenPFsum);
+            }
+         }
       }
    }
+
+   CalculateProbs(UEPFs, nullptr, UEPF_probs, nullptr);
+
+   gNGenPF->Smooth(1, "k5b");
+   qNGenPF->Smooth(1, "k5b");
 
    CalculateProbs(gNGenPF, qNGenPF, gNGenPF_probs, qNGenPF_probs);
    CalculateProbs(gGenJetMass, qGenJetMass, gGenJetMass_probs, qGenJetMass_probs);
@@ -232,11 +264,11 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
 
    TH2D* gprobs_smooth = (TH2D*)gNGenPF_probs->Clone("gluon_probs_smooth");
 //   gprobs_smooth->SetAxisRange(2000, 3500, "X");
-   gprobs_smooth->Smooth(1, "k5b");
+//   gprobs_smooth->Smooth(1, "k5b");
 
    TH2D* qprobs_smooth = (TH2D*)qNGenPF_probs->Clone("quark_probs_smooth");
 //   qprobs_smooth->SetAxisRange(2000, 3500, "X");
-   qprobs_smooth->Smooth(1, "k5b");
+//   qprobs_smooth->Smooth(1, "k5b");
 
    cout << "probability calculated" << endl;
 
@@ -250,13 +282,15 @@ void GluonHistosFill::CalculateProbs(TH2D* gHist, TH2D* qHist, TH2D* gProbs, TH2
    double qIntegral;
    for (int xb = 1; xb != gHist->GetNbinsX()+1; ++xb) {
       gIntegral = gHist->Integral(xb, xb, 0, gHist->GetNbinsY());
-      qIntegral = qHist->Integral(xb, xb, 0, qHist->GetNbinsY());
-      if (gIntegral > 0 || qIntegral > 0) { 
+      if (qHist != nullptr) {
+         qIntegral = qHist->Integral(xb, xb, 0, qHist->GetNbinsY());
+      }
+      if (gIntegral > 0 || (qIntegral > 0 && qProbs != nullptr)) {
          for (int yb = 1; yb != gHist->GetNbinsY()+1; ++yb) {
             if (gIntegral > 0) {
                gProbs->SetBinContent(xb, yb, gHist->GetBinContent(xb, yb) / gIntegral);
             }
-            if (qIntegral > 0) {
+            if (qIntegral > 0 && qHist != nullptr) {
                qProbs->SetBinContent(xb, yb, qHist->GetBinContent(xb, yb) / qIntegral);
             }
          }
