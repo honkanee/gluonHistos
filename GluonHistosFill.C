@@ -96,6 +96,21 @@ fChain->SetBranchStatus("*jetArea",1);
    TFile* file = new TFile("outputGluonHistos.root", "recreate");
    #endif
 
+   //All
+   TProfile* PtResp = new TProfile("pt_resp", "", NBINS, ptrange);
+   TProfile* PtRespNGenPF = new TProfile("pt_resp_nGenJetPF", "", NBINS, ptrange);
+   TProfile* NGenPF = new TProfile("nGenPF_prof", "", NBINS, ptrange);
+   TProfile* NGenPF_w = new TProfile("nGenPF_prof_w", "", NBINS, ptrange);
+   TProfile* PtRespNGenPF_w = new TProfile("pt_resp_nGenJetPF_w", "", NBINS, ptrange);
+   TProfile* PtRespNGenPFSig_w = new TProfile("pt_resp_nGenJetPFSig_w", "", NBINS, ptrange);
+
+   TH2D* NGenPF_w_hist = new TH2D("nGenPF_hist_w", "", NBINS, ptrange, NPFBINS, pfrange);
+   TH1D* PerPtBin = new TH1D("per_pt_bin", "", NBINS, ptrange);
+   TH2D* PtResp_hist = new TH2D("pt_resp_hist", "", NBINS, ptrange, 300, 0.85, 1.15);
+   TH2D* PtRespNGenPF_w_hist = new TH2D("pt_resp_nGenJetPF_w_hist", "", NBINS, ptrange, 300, 0.85, 1.15);
+   TH2D* PtRespNGenPFSig_w_hist = new TH2D("pt_resp_nGenJetPFSig_w_hist", "", NBINS, ptrange, 300, 0.85, 1.15);
+
+
    // Gluons
    TProfile* gPtResp = new TProfile("gluon_pt_resp", "", NBINS, ptrange);
    TProfile* gPtRespNGenPF = new TProfile("gluon_pt_resp_nGenJetPF", "", NBINS, ptrange);
@@ -206,9 +221,14 @@ fChain->SetBranchStatus("*jetArea",1);
                qNGenPF_w->Fill(genJetPt, nGenJetPF, w);
             }
          }
+         //All
+         PtResp->Fill(genJetPt, resp);
+         PtResp_hist->Fill(genJetPt, resp);
+         PerPtBin->Fill(genJetPt);
    }
 }
 
+PtResp_hist->FitSlicesY();
 
 gPtResp_hist->FitSlicesY();
 gPtRespNGenPF_w_hist->FitSlicesY();
@@ -288,7 +308,7 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
                      ++nPFsum;
                   }
             }
-            nUEPF_per_A = nPFsum / (M_PI * (dR_out*dR_out - dR_in*dR_in));
+            nUEPF_per_A = 2.75 * nPFsum / (M_PI * (dR_out*dR_out - dR_in*dR_in));
             nUEPF_perA_hist->Fill(nUEPF_per_A);
             nUEPF = jetArea*nUEPF_per_A;
             nGenPFSig = nGenJetPF - nUEPF;

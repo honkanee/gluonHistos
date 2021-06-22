@@ -14,6 +14,13 @@ void drawGluonHistos() {
     TFile* f = TFile::Open("outputGluonHistos.root");
     TFile* f2 = TFile::Open("weightHistos.root");
 
+    //All
+    TProfile* pt_resp;
+    TH1D* pt_resp_gaus;
+
+    f->GetObject("pt_resp", pt_resp);
+    f->GetObject("pt_resp_hist_1", pt_resp_gaus);
+
     // Gluons
     TProfile* gluon_pt_resp;
     TProfile* gluon_pt_resp_nGenJetPF;
@@ -92,7 +99,8 @@ void drawGluonHistos() {
     h->GetXaxis()->SetMoreLogLabels();
     gPad->SetLogx();
 
-    tdrDraw(gluon_pt_resp, "P", kFullCircle, kRed);
+    tdrDraw(pt_resp, "", kFullCircle, kBlack);
+    tdrDraw(gluon_pt_resp, "", kFullCircle, kRed);
     tdrDraw(gluon_pt_resp_nGenJetPF_w, "", kFullTriangleUp, kRed);
     tdrDraw(gluon_pt_resp_nGenJetPFSig_w, "", kFullTriangleDown, kOrange +7);
     tdrDraw(quark_pt_resp, "", kFullCircle, kBlue);
@@ -106,6 +114,7 @@ void drawGluonHistos() {
     quark_pt_resp_nGenJetPFSig_w->SetMarkerSize(1.2);
 
     TLegend *leg1 = tdrLeg(0.37,0.90-6*0.045,0.57,0.90);
+    leg1->AddEntry(pt_resp, "All", "PLE");
     leg1->AddEntry(gluon_pt_resp, "Gluons", "PLE");
     leg1->AddEntry(quark_pt_resp, "Quarks", "PLE");
     leg1->AddEntry(gluon_pt_resp_nGenJetPF_w, "Gluons weighted", "PLE");
@@ -124,6 +133,7 @@ void drawGluonHistos() {
     h->GetXaxis()->SetMoreLogLabels();
     gPad->SetLogx();
 
+    tdrDraw(pt_resp_gaus, "P", kFullCircle, kBlack);
     tdrDraw(gluon_pt_resp_gaus, "P", kFullCircle, kRed);
     tdrDraw(gluon_pt_resp_nGenJetPF_w_gaus, "P", kFullTriangleUp, kRed);
     tdrDraw(gluon_pt_resp_nGenJetPFSig_w_gaus, "P", kFullTriangleDown, kOrange +7);
@@ -138,6 +148,7 @@ void drawGluonHistos() {
     quark_pt_resp_nGenJetPFSig_w_gaus->SetMarkerSize(1.2);
 
     TLegend *leg3 = tdrLeg(0.37,0.90-6*0.045,0.57,0.90);
+    leg3->AddEntry(pt_resp_gaus, "All", "PLE");
     leg3->AddEntry(gluon_pt_resp_gaus, "Gluons", "PLE");
     leg3->AddEntry(quark_pt_resp_gaus, "Quarks", "PLE");
     leg3->AddEntry(gluon_pt_resp_nGenJetPF_w_gaus, "Gluons weighted", "PLE");
