@@ -159,51 +159,51 @@ fChain->SetBranchStatus("*jetArea",1);
       // if (Cut(ientry) < 0) continue;
       if (fabs(jetEta)<1.3 && jetPtOrder<2 && fpclassify(genJetPt) == FP_NORMAL && genJetPt > 0) {
          resp = jetPt/genJetPt;
-         gprob = gHist2->GetBinContent(gHist2->FindBin(genJetPt, nGenJetPF));
-         qprob = qHist2->GetBinContent(qHist2->FindBin(genJetPt, nGenJetPF));
+         gprob = gHist2->GetBinContent(gHist2->FindBin(jetPt, nGenJetPF));
+         qprob = qHist2->GetBinContent(qHist2->FindBin(jetPt, nGenJetPF));
 
          nUEPF = jetArea*nUEPF_per_A;
          nGenPFSig = nGenJetPF - nUEPF;
-         gprob_sig = gHist2_sig->GetBinContent(gHist2_sig->FindBin(genJetPt, nGenPFSig));
-         qprob_sig = qHist2_sig->GetBinContent(qHist2_sig->FindBin(genJetPt, nGenPFSig));
+         gprob_sig = gHist2_sig->GetBinContent(gHist2_sig->FindBin(jetPt, nGenPFSig));
+         qprob_sig = qHist2_sig->GetBinContent(qHist2_sig->FindBin(jetPt, nGenPFSig));
          if (isPhysG) {
-            gPtResp->Fill(genJetPt, resp);
-            gPtResp_hist->Fill(genJetPt, resp);
-            gNGenPF->Fill(genJetPt, nGenJetPF);
+            gPtResp->Fill(jetPt, resp);
+            gPtResp_hist->Fill(jetPt, resp);
+            gNGenPF->Fill(jetPt, nGenJetPF);
             gPerPtBin->Fill(genJetPt);
             if (gprob_sig > 0 && qprob_sig > 0) {
                w_sig = qprob_sig/gprob_sig;
-               gPtRespNGenPFSig_w->Fill(genJetPt, resp, w_sig);
-               gPtRespNGenPFSig_w_hist->Fill(genJetPt, resp, w_sig);
+               gPtRespNGenPFSig_w->Fill(jetPt, resp, w_sig);
+               gPtRespNGenPFSig_w_hist->Fill(jetPt, resp, w_sig);
             }
             if (gprob > 0 && qprob > 0) {
                w = qprob/gprob;
-               gPtRespNGenPF_w->Fill(genJetPt, resp, w);
-               gPtRespNGenPF_w_hist->Fill(genJetPt, resp, w);
+               gPtRespNGenPF_w->Fill(jetPt, resp, w);
+               gPtRespNGenPF_w_hist->Fill(jetPt, resp, w);
             }
             else w = 0;
-            gNGenPF_w_hist->Fill(genJetPt, nGenJetPF, w);
-            gNGenPF_w->Fill(genJetPt, nGenJetPF, w);
+            gNGenPF_w_hist->Fill(jetPt, nGenJetPF, w);
+            gNGenPF_w->Fill(jetPt, nGenJetPF, w);
          }
          else {
             if (isPhysUDS) {
-               qPtResp->Fill(genJetPt, resp);
-               qPtResp_hist->Fill(genJetPt, resp);
-               qNGenPF->Fill(genJetPt, nGenJetPF);
+               qPtResp->Fill(jetPt, resp);
+               qPtResp_hist->Fill(jetPt, resp);
+               qNGenPF->Fill(jetPt, nGenJetPF);
                qPerPtBin->Fill(genJetPt);
                if (gprob_sig > 0 && qprob_sig > 0) {
                   w_sig = gprob_sig/qprob_sig;
-                  qPtRespNGenPFSig_w->Fill(genJetPt, resp, w_sig);
-                  qPtRespNGenPFSig_w_hist->Fill(genJetPt, resp, w_sig);
+                  qPtRespNGenPFSig_w->Fill(jetPt, resp, w_sig);
+                  qPtRespNGenPFSig_w_hist->Fill(jetPt, resp, w_sig);
                }
                if (gprob > 0 && qprob > 0) {
                   w = gprob/qprob;
-                  qPtRespNGenPF_w->Fill(genJetPt, resp, w);
-                  qPtRespNGenPF_w_hist->Fill(genJetPt, resp, w);
+                  qPtRespNGenPF_w->Fill(jetPt, resp, w);
+                  qPtRespNGenPF_w_hist->Fill(jetPt, resp, w);
                }
                else w = 0;
-               qNGenPF_w_hist->Fill(genJetPt, nGenJetPF, w);
-               qNGenPF_w->Fill(genJetPt, nGenJetPF, w);
+               qNGenPF_w_hist->Fill(jetPt, nGenJetPF, w);
+               qNGenPF_w->Fill(jetPt, nGenJetPF, w);
             }
          }
    }
@@ -279,7 +279,7 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
 
       if (fabs(jetEta)<1.3 && jetPtOrder<2 && fpclassify(genJetPt) == FP_NORMAL && genJetPt > 0) {
          if (isPhysG) {
-            gNGenPF->Fill(genJetPt, nGenJetPF);
+            gNGenPF->Fill(jetPt, nGenJetPF);
             gGenJetMass->Fill(genJetPt, genJetMass);
             gJetGirth->Fill(genJetPt, jetGirth);
             nPFsum = 0;
@@ -288,14 +288,16 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
                      ++nPFsum;
                   }
             }
-            nUEPF_per_A = nPFsum / (M_PI * (dR_out*dR_out - dR_in*dR_in));
+            nUEPF_per_A = 2.75 * nPFsum / (M_PI * (dR_out*dR_out - dR_in*dR_in));
             nUEPF_perA_hist->Fill(nUEPF_per_A);
             nUEPF = jetArea*nUEPF_per_A;
             nGenPFSig = nGenJetPF - nUEPF;
+            gNGenPFSig->Fill(jetPt, nGenPFSig);
+            gNGenPFSig_prof->Fill(jetPt, nGenPFSig);
          }
          else {
             if (isPhysUDS) {
-               qNGenPF->Fill(genJetPt, nGenJetPF);
+               qNGenPF->Fill(jetPt, nGenJetPF);
                qGenJetMass->Fill(genJetPt, genJetMass);
                qJetGirth->Fill(genJetPt, jetGirth);
                nPFsum = 0;
@@ -306,6 +308,10 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
                }
                nUEPF_per_A = 2.75 * nPFsum / (M_PI * (dR_out*dR_out - dR_in*dR_in));
                nUEPF_perA_hist->Fill(nUEPF_per_A);
+               nUEPF = jetArea*nUEPF_per_A;
+               nGenPFSig = nGenJetPF - nUEPF;
+               gNGenPFSig->Fill(jetPt, nGenPFSig);
+               gNGenPFSig_prof->Fill(jetPt, nGenPFSig);
             }
          }
       }
@@ -316,6 +322,7 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
    nUEPF_per_A = nUEPF_perA_hist->GetMean();
    cout << nUEPF_per_A << endl;
 
+/*
    nentries = fChain->GetEntriesFast();
    nbytes = 0, nb = 0;
    for (Long64_t jentry=0; jentry<nentries;jentry++) {
@@ -326,20 +333,20 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
          if (isPhysG) {
             nUEPF = jetArea*nUEPF_per_A;
             nGenPFSig = nGenJetPF - nUEPF;
-            gNGenPFSig->Fill(genJetPt, nGenPFSig);
-            gNGenPFSig_prof->Fill(genJetPt, nGenPFSig);
+            gNGenPFSig->Fill(jetPt, nGenPFSig);
+            gNGenPFSig_prof->Fill(jetPt, nGenPFSig);
          }
          else {
             if (isPhysUDS) {
                nUEPF = jetArea*nUEPF_per_A;
                nGenPFSig = nGenJetPF - nUEPF;
-               qNGenPFSig->Fill(genJetPt, nGenPFSig);
-               qNGenPFSig_prof->Fill(genJetPt, nGenPFSig);
+               qNGenPFSig->Fill(jetPt, nGenPFSig);
+               qNGenPFSig_prof->Fill(jetPt, nGenPFSig);
             }
          }
       }
    }
-
+*/
    gNGenPF->Smooth(1, "k5b");
    gNGenPFSig->Smooth(1, "k5b");
    qNGenPF->Smooth(1, "k5b");

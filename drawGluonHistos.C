@@ -86,7 +86,7 @@ void drawGluonHistos() {
 
     //Pt response
     TH1D* h = tdrHist("h", "Response", 0.9, 1.2,
-    "gen p_{T} (GeV)", 30, 3500);
+    "p_{T} (GeV)", 30, 3500);
     h->GetXaxis()->SetNoExponent();
     TCanvas* c1 = tdrCanvas("c1", h, 4, 11, kSquare);
     h->GetXaxis()->SetMoreLogLabels();
