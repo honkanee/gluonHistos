@@ -106,9 +106,9 @@ fChain->SetBranchStatus("*jetArea",1);
 
    TH2D* gNGenPF_w_hist = new TH2D("gluon_nGenPF_hist_w", "", NBINS, ptrange, NPFBINS, pfrange);
    TH1D* gPerPtBin = new TH1D("gluons_per_pt_bin", "", NBINS, ptrange);
-   TH2D* gPtResp_hist = new TH2D("gluon_pt_resp_hist", "", NBINS, ptrange, 300, 0.85, 1.15);
-   TH2D* gPtRespNGenPF_w_hist = new TH2D("gluon_pt_resp_nGenJetPF_w_hist", "", NBINS, ptrange, 300, 0.85, 1.15);
-   TH2D* gPtRespNGenPFSig_w_hist = new TH2D("gluon_pt_resp_nGenJetPFSig_w_hist", "", NBINS, ptrange, 300, 0.85, 1.15);
+   TH2D* gPtResp_hist = new TH2D("gluon_pt_resp_hist", "", NBINS, ptrange, 500, 0.75, 1.25);
+   TH2D* gPtRespNGenPF_w_hist = new TH2D("gluon_pt_resp_nGenJetPF_w_hist", "", NBINS, ptrange, 500, 0.75, 1.25);
+   TH2D* gPtRespNGenPFSig_w_hist = new TH2D("gluon_pt_resp_nGenJetPFSig_w_hist", "", NBINS, ptrange, 500, 0.75, 1.25);
 
    // Quarks
    TProfile* qPtResp = new TProfile("quark_pt_resp", "", NBINS, ptrange);
@@ -120,9 +120,9 @@ fChain->SetBranchStatus("*jetArea",1);
 
    TH2D* qNGenPF_w_hist = new TH2D("quark_nGenPF_hist_w", "", NBINS, ptrange, NPFBINS, pfrange);
    TH1D* qPerPtBin = new TH1D("quarks_per_pt_bin", "", NBINS, ptrange);
-   TH2D* qPtResp_hist = new TH2D("quark_pt_resp_hist", "", NBINS, ptrange, 300, 0.85, 1.15);
-   TH2D* qPtRespNGenPF_w_hist = new TH2D("quark_pt_resp_nGenJetPF_w_hist", "", NBINS, ptrange, 300, 0.55, 1.15);
-   TH2D* qPtRespNGenPFSig_w_hist = new TH2D("quark_pt_resp_nGenJetPFSig_w_hist", "", NBINS, ptrange, 300, 0.85, 1.15);
+   TH2D* qPtResp_hist = new TH2D("quark_pt_resp_hist", "", NBINS, ptrange, 500, 0.75, 1.25);
+   TH2D* qPtRespNGenPF_w_hist = new TH2D("quark_pt_resp_nGenJetPF_w_hist", "", NBINS, ptrange, 500, 0.75, 1.25);
+   TH2D* qPtRespNGenPFSig_w_hist = new TH2D("quark_pt_resp_nGenJetPFSig_w_hist", "", NBINS, ptrange, 500, 0.75, 1.25);
 
    TH2D* nGenJetPF_probsRatio = new TH2D("nGenJetPF_likelyhood", "", NBINS, ptrange, NPFBINS, pfrange);
 
@@ -157,7 +157,7 @@ fChain->SetBranchStatus("*jetArea",1);
       if (ientry < 0) break;
       nb = fChain->GetEntry(jentry);   nbytes += nb;
       // if (Cut(ientry) < 0) continue;
-      if (fabs(jetEta)<1.3 && jetPtOrder<2 && fpclassify(jetPt) == FP_NORMAL && jetPt > 0) {
+      if (fabs(jetEta)<1.3 && jetPtOrder<2 && fpclassify(jetPt) == FP_NORMAL && genJetPt > 0) {
          resp = jetPt/genJetPt;
          gprob = gHist2->GetBinContent(gHist2->FindBin(jetPt, nGenJetPF));
          qprob = qHist2->GetBinContent(qHist2->FindBin(jetPt, nGenJetPF));
@@ -280,7 +280,7 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
       nb = fChain->GetEntry(jentry);   nbytes += nb;
       // if (Cut(ientry) < 0) continue;
 
-      if (fabs(jetEta)<1.3 && jetPtOrder<2 && fpclassify(genJetPt) == FP_NORMAL && genJetPt > 0) {
+      if (fabs(jetEta)<1.3 && jetPtOrder<2 && fpclassify(genJetPt) == FP_NORMAL && jetPt > 0) {
          if (isPhysG) {
             gNGenPF->Fill(jetPt, nGenJetPF);
             gGenJetMass->Fill(genJetPt, genJetMass);
@@ -325,7 +325,6 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
    cout << "first loop done" << endl;
 
    nUEPF_per_A = nUEPF_perA_hist->GetMean();
-   cout << nUEPF_per_A << endl;
 
 /*
    nentries = fChain->GetEntriesFast();
