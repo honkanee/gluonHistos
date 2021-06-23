@@ -286,7 +286,11 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
    double dR_out = 1.0;
    double nGenPFSig;
 
-   TH1D* nUEPF_perA_hist = new TH1D("UE_nPF_perA", "", 800, 0, 80);
+   TH1D* nUEPF_perA_hist = new TH1D("UE_nPF_perA", "", 40, 0, 80);
+   TH2D* nUEPF_perA_nGenPF_hist = new TH2D("nUEPF_perA_nGenPF_hist", "", npfbins, pfrange, 40, 0, 80);
+   TH2D* nUEPF_perA_nGenPF_probs = new TH2D("nUEPF_perA_nGenPF_probs", "", npfbins, pfrange, 40, 0, 80);
+   TH2D* nUEPF_perA_genJetPt_hist = new TH2D("nUEPF_perA_genJetPt_hist", "", nptbins, ptrange, 40, 0, 80);
+   TH2D* nUEPF_perA_genJetPt_probs = new TH2D("nUEPF_perA_genJetPt_probs", "", nptbins, ptrange, 40, 0, 80);
    TProfile* nUEPF_nGenPF = new TProfile("nUEPF_nGenPF", "", npfbins, pfrange);
 
    Long64_t nentries = fChain->GetEntriesFast();
@@ -310,6 +314,8 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
             }
             nUEPF_per_A = 2.75 * nPFsum / (M_PI * (dR_out*dR_out - dR_in*dR_in));
             nUEPF_perA_hist->Fill(nUEPF_per_A);
+            nUEPF_perA_genJetPt_hist->Fill(genJetPt, nUEPF_per_A);
+            nUEPF_perA_nGenPF_hist->Fill(nGenJetPF, nUEPF_per_A);
             nUEPF = jetArea*nUEPF_per_A;
             nGenPFSig = nGenJetPF - nUEPF;
          }
@@ -326,6 +332,8 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
                }
                nUEPF_per_A = 2.75 * nPFsum / (M_PI * (dR_out*dR_out - dR_in*dR_in));
                nUEPF_perA_hist->Fill(nUEPF_per_A);
+               nUEPF_perA_genJetPt_hist->Fill(genJetPt, nUEPF_per_A);
+               nUEPF_perA_nGenPF_hist->Fill(nGenJetPF, nUEPF_per_A);
             }
          }
       }
@@ -364,6 +372,9 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
    gNGenPFSig->Smooth(1, "k5b");
    qNGenPF->Smooth(1, "k5b");
    qNGenPFSig->Smooth(1, "k5b");
+
+   CalculateProbs(nUEPF_perA_genJetPt_hist, nullptr, nUEPF_perA_genJetPt_probs, nullptr);
+   CalculateProbs(nUEPF_perA_nGenPF_hist, nullptr, nUEPF_perA_nGenPF_probs, nullptr);
 
    CalculateProbs(gNGenPF, qNGenPF, gNGenPF_probs, qNGenPF_probs);
    CalculateProbs(gNGenPFSig, qNGenPFSig, gNGenPFSig_probs, qNGenPFSig_probs);

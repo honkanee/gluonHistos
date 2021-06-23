@@ -17,10 +17,14 @@ void drawGluonHistos() {
     //All
     TProfile* pt_resp;
     TH1D* pt_resp_gaus;
-    TH2D* nUEPF_hist;
+    TH2D* nUEPF_pt_hist;
+    TH2D* nUEPF_nGenPF_hist;
 
     f->GetObject("pt_resp", pt_resp);
     f->GetObject("pt_resp_hist_1", pt_resp_gaus);
+
+    f2->GetObject("nUEPF_perA_genJetPt_probs", nUEPF_pt_hist);
+    f2->GetObject("nUEPF_perA_nGenPF_probs", nUEPF_nGenPF_hist);
 
     // Gluons
     TProfile* gluon_pt_resp;
@@ -292,5 +296,15 @@ void drawGluonHistos() {
 
     //nUEPF
     TCanvas* c9 = new TCanvas("c9", "c9", 700, 700);
+    nUEPF_nGenPF_hist->Draw("colz");
+    nUEPF_nGenPF_hist->GetXaxis()->SetTitle("gen p_{T}");
+    nUEPF_nGenPF_hist->GetYaxis()->SetTitle("nUEPF_perA");
 
+    TCanvas* c10 = new TCanvas("c10", "c10", 700, 700);
+    nUEPF_pt_hist->Draw("colz");
+    nUEPF_pt_hist->GetXaxis()->SetMoreLogLabels();
+    nUEPF_pt_hist->GetXaxis()->SetNoExponent();
+    nUEPF_pt_hist->GetXaxis()->SetTitle("gen p_{T}");
+    nUEPF_pt_hist->GetYaxis()->SetTitle("nUEPF_perA");
+    gPad->SetLogx();
 }
