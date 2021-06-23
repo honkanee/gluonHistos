@@ -106,9 +106,9 @@ fChain->SetBranchStatus("*jetArea",1);
 
    TH2D* NGenPF_w_hist = new TH2D("nGenPF_hist_w", "", NBINS, ptrange, NPFBINS, pfrange);
    TH1D* PerPtBin = new TH1D("per_pt_bin", "", NBINS, ptrange);
-   TH2D* PtResp_hist = new TH2D("pt_resp_hist", "", NBINS, ptrange, 300, 0.85, 1.15);
-   TH2D* PtRespNGenPF_w_hist = new TH2D("pt_resp_nGenJetPF_w_hist", "", NBINS, ptrange, 300, 0.85, 1.15);
-   TH2D* PtRespNGenPFSig_w_hist = new TH2D("pt_resp_nGenJetPFSig_w_hist", "", NBINS, ptrange, 300, 0.85, 1.15);
+   TH2D* PtResp_hist = new TH2D("pt_resp_hist", "", NBINS, ptrange, 1000, 0.5, 1.5);
+   TH2D* PtRespNGenPF_w_hist = new TH2D("pt_resp_nGenJetPF_w_hist", "", NBINS, ptrange, 1000, 0.5, 1.5);
+   TH2D* PtRespNGenPFSig_w_hist = new TH2D("pt_resp_nGenJetPFSig_w_hist", "", NBINS, ptrange, 1000, 0.5, 1.5);
 
 
    // Gluons
@@ -121,9 +121,9 @@ fChain->SetBranchStatus("*jetArea",1);
 
    TH2D* gNGenPF_w_hist = new TH2D("gluon_nGenPF_hist_w", "", NBINS, ptrange, NPFBINS, pfrange);
    TH1D* gPerPtBin = new TH1D("gluons_per_pt_bin", "", NBINS, ptrange);
-   TH2D* gPtResp_hist = new TH2D("gluon_pt_resp_hist", "", NBINS, ptrange, 300, 0.85, 1.15);
-   TH2D* gPtRespNGenPF_w_hist = new TH2D("gluon_pt_resp_nGenJetPF_w_hist", "", NBINS, ptrange, 300, 0.85, 1.15);
-   TH2D* gPtRespNGenPFSig_w_hist = new TH2D("gluon_pt_resp_nGenJetPFSig_w_hist", "", NBINS, ptrange, 300, 0.85, 1.15);
+   TH2D* gPtResp_hist = new TH2D("gluon_pt_resp_hist", "", NBINS, ptrange, 1000, 0.5, 1.5);
+   TH2D* gPtRespNGenPF_w_hist = new TH2D("gluon_pt_resp_nGenJetPF_w_hist", "", NBINS, ptrange, 1000, 0.5, 1.5);
+   TH2D* gPtRespNGenPFSig_w_hist = new TH2D("gluon_pt_resp_nGenJetPFSig_w_hist", "", NBINS, ptrange, 1000, 0.5, 1.5);
 
    // Quarks
    TProfile* qPtResp = new TProfile("quark_pt_resp", "", NBINS, ptrange);
@@ -286,7 +286,7 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
    double dR_out = 1.0;
    double nGenPFSig;
 
-   TH1D* nUEPF_perA_hist = new TH1D("UE_nPF_perA", "", 500, 0, 50);
+   TH1D* nUEPF_perA_hist = new TH1D("UE_nPF_perA", "", 800, 0, 80);
    TProfile* nUEPF_nGenPF = new TProfile("nUEPF_nGenPF", "", npfbins, pfrange);
 
    Long64_t nentries = fChain->GetEntriesFast();
