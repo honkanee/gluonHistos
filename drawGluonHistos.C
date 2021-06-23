@@ -17,6 +17,7 @@ void drawGluonHistos() {
     //All
     TProfile* pt_resp;
     TH1D* pt_resp_gaus;
+    TH2D* nUEPF_hist;
 
     f->GetObject("pt_resp", pt_resp);
     f->GetObject("pt_resp_hist_1", pt_resp_gaus);
@@ -288,23 +289,8 @@ void drawGluonHistos() {
     nGenJetPF_likelyhood->GetYaxis()->SetTitle("n_{GenJetPF}");
     nGenJetPF_likelyhood->Draw("colz");
 
-/*
-    //genJetMass
-    TCanvas* c5 = new TCanvas("c5","c5",1400,700);
-    c5->Divide(2,1);
 
-    c5->cd(1);
-    gluon_genJetMass->GetXaxis()->SetTitle("p_{T} (GeV)");
-    gluon_genJetMass->GetYaxis()->SetTitle("genJetMass");
-    gluon_genJetMass->SetAxisRange(30, 3500, "X");
-    gPad->SetLogx();
-    gluon_genJetMass->Draw("lego2");
+    //nUEPF
+    TCanvas* c9 = new TCanvas("c9", "c9", 700, 700);
 
-    c5->cd(2);
-    quark_genJetMass->GetXaxis()->SetTitle("p_{T} (GeV");
-    quark_genJetMass->GetYaxis()->SetTitle("p_{T} (GeV)");
-    quark_genJetMass->SetAxisRange(30, 3500, "X");
-    gPad->SetLogx();
-    quark_genJetMass->Draw("lego2");
-    */
 }
