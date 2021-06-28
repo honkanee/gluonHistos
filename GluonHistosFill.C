@@ -307,10 +307,10 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
    double nGenPFSig;
 
    TH1D* nUEPF_perA_hist = new TH1D("UE_nPF_perA", "", 800, 0, 80);
-   TH2D* nUEPF_perA_nGenPF_hist = new TH2D("nUEPF_perA_nGenPF_hist", "", npfbins, pfrange, 80, 0, 80);
-   TH2D* nUEPF_perA_nGenPF_probs = new TH2D("nUEPF_perA_nGenPF_probs", "", npfbins, pfrange, 80, 0, 80);
-   TH2D* nUEPF_perA_genJetPt_hist = new TH2D("nUEPF_perA_genJetPt_hist", "", nptbins, ptrange, 80, 0, 80);
-   TH2D* nUEPF_perA_genJetPt_probs = new TH2D("nUEPF_perA_genJetPt_probs", "", nptbins, ptrange, 80, 0, 80);
+   TH2D* nUEPF_perA_nGenPF_hist = new TH2D("nUEPF_perA_nGenPF_hist", "", npfbins, pfrange, 29, 0, 80);
+   TH2D* nUEPF_perA_nGenPF_probs = new TH2D("nUEPF_perA_nGenPF_probs", "", npfbins, pfrange, 29, 0, 80);
+   TH2D* nUEPF_perA_genJetPt_hist = new TH2D("nUEPF_perA_genJetPt_hist", "", nptbins, ptrange, 29, 0, 80);
+   TH2D* nUEPF_perA_genJetPt_probs = new TH2D("nUEPF_perA_genJetPt_probs", "", nptbins, ptrange, 29, 0, 80);
    TProfile* nUEPF_nGenPF = new TProfile("nUEPF_nGenPF", "", npfbins, pfrange);
 
    Long64_t nentries = fChain->GetEntriesFast();
