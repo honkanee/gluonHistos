@@ -8,7 +8,7 @@
 #define GluonHistosFill_h
 
 //#define SINGLE_TREE
-//#define RECREATE_WEIGHTS
+#define RECREATE_WEIGHTS
 
 #include <iostream>
 
@@ -27,6 +27,12 @@ const int N_GenJetPF = 500;
 
 class GluonHistosFill {
 public :
+
+   bool recoWeighted = false;
+   bool recoPlotted = false;
+   Float_t usedWeightPt;
+   Float_t usedPlotPt;
+
    TTree          *fChain;   //!pointer to the analyzed TTree or TChain
    Int_t           fCurrent; //!current Tree number in a TChain
 

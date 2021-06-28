@@ -296,11 +296,13 @@ void drawGluonHistos() {
 
     //nUEPF
     TCanvas* c9 = new TCanvas("c9", "c9", 700, 700);
+    nUEPF_nGenPF_hist->SetAxisRange(0, 100, "X");
     nUEPF_nGenPF_hist->Draw("colz");
-    nUEPF_nGenPF_hist->GetXaxis()->SetTitle("gen p_{T}");
+    nUEPF_nGenPF_hist->GetXaxis()->SetTitle("nGenPF");
     nUEPF_nGenPF_hist->GetYaxis()->SetTitle("nUEPF_perA");
 
     TCanvas* c10 = new TCanvas("c10", "c10", 700, 700);
+    nUEPF_pt_hist->SetAxisRange(30, 3500, "X");
     nUEPF_pt_hist->Draw("colz");
     nUEPF_pt_hist->GetXaxis()->SetMoreLogLabels();
     nUEPF_pt_hist->GetXaxis()->SetNoExponent();
