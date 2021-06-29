@@ -16,12 +16,22 @@ void drawGluonHistos() {
 
     //All
     TProfile* pt_resp;
+    TProfile* pt_resp_nGenJetPF_wg;
+    TProfile* pt_resp_nGenJetPFSig_wg;
+
     TH1D* pt_resp_gaus;
+    TH1D* pt_resp_nGenJetPF_wg_gaus;
+    TH1D* pt_resp_nGenJetPFSig_wg_gaus;
     TH2D* nUEPF_pt_hist;
     TH2D* nUEPF_nGenPF_hist;
 
     f->GetObject("pt_resp", pt_resp);
+    f->GetObject("pt_resp_nGenJetPF_wg", pt_resp_nGenJetPF_wg);
+    f->GetObject("pt_resp_nGenJetPFSig_wg", pt_resp_nGenJetPFSig_wg);
+
     f->GetObject("pt_resp_hist_1", pt_resp_gaus);
+    f->GetObject("pt_resp_nGenJetPF_wg_hist_1", pt_resp_nGenJetPF_wg_gaus);
+    f->GetObject("pt_resp_nGenJetPFSig_wg_hist_1", pt_resp_nGenJetPFSig_wg_gaus);
 
     f2->GetObject("nUEPF_perA_genJetPt_probs", nUEPF_pt_hist);
     f2->GetObject("nUEPF_perA_nGenPF_probs", nUEPF_nGenPF_hist);
@@ -104,7 +114,9 @@ void drawGluonHistos() {
     h->GetXaxis()->SetMoreLogLabels();
     gPad->SetLogx();
 
-    tdrDraw(pt_resp, "", kFullCircle, kBlack);
+    tdrDraw(pt_resp, "", kOpenCircle, kBlack);
+    tdrDraw(pt_resp_nGenJetPF_wg, "", kOpenTriangleUp, kBlack);
+    tdrDraw(pt_resp_nGenJetPFSig_wg, "", kOpenTriangleDown, kBlack);
     tdrDraw(gluon_pt_resp, "", kFullCircle, kRed);
     tdrDraw(gluon_pt_resp_nGenJetPF_w, "", kFullTriangleUp, kRed);
     tdrDraw(gluon_pt_resp_nGenJetPFSig_w, "", kFullTriangleDown, kOrange +7);
@@ -138,7 +150,9 @@ void drawGluonHistos() {
     h->GetXaxis()->SetMoreLogLabels();
     gPad->SetLogx();
 
-    tdrDraw(pt_resp_gaus, "P", kFullCircle, kBlack);
+    tdrDraw(pt_resp_gaus, "P", kOpenCircle, kBlack);
+    tdrDraw(pt_resp_nGenJetPF_wg_gaus, "", kOpenTriangleUp, kBlack);
+    tdrDraw(pt_resp_nGenJetPFSig_wg_gaus, "P", kOpenTriangleDown, kBlack);
     tdrDraw(gluon_pt_resp_gaus, "P", kFullCircle, kRed);
     tdrDraw(gluon_pt_resp_nGenJetPF_w_gaus, "P", kFullTriangleUp, kRed);
     tdrDraw(gluon_pt_resp_nGenJetPFSig_w_gaus, "P", kFullTriangleDown, kOrange +7);

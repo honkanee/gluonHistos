@@ -174,11 +174,17 @@ fChain->SetBranchStatus("*jetArea",1);
       nb = fChain->GetEntry(jentry);   nbytes += nb;
       // if (Cut(ientry) < 0) continue;
       if (fabs(jetEta)<1.3 && jetPtOrder<2 && fpclassify(genJetPt) == FP_NORMAL && genJetPt > 0) {
+         if (recoPlotted) {
+            usedPlotPt = jetPt;
+         }
+         else {
+            usedPlotPt = genJetPt;
+         }
          if (recoWeighted) {
             usedWeightPt = jetPt;
          }
          else {
-            usedWeightPt = jetPt;
+            usedWeightPt = genJetPt;
          }
 
          resp = jetPt/genJetPt;
@@ -232,14 +238,20 @@ fChain->SetBranchStatus("*jetArea",1);
          //All
          PtResp->Fill(usedPlotPt, resp);
          PtResp_hist->Fill(usedPlotPt, resp);
-         PtRespNGenPF_wg->Fill(usedPlotPt, resp, qprob/gprob);
-         PtRespNGenPF_wg_hist->Fill(usedPlotPt, resp, qprob/gprob);
-         PtRespNGenPFSig_wg->Fill(usedPlotPt, resp, qprob/gprob);
-         PtRespNGenPFSig_wg_hist->Fill(usedPlotPt, resp, qprob/gprob);
-         PtRespNGenPF_wq->Fill(usedPlotPt, resp, gprob/qprob);
-         PtRespNGenPF_wq_hist->Fill(usedPlotPt, resp, gprob/qprob);
-         PtRespNGenPFSig_wq->Fill(usedPlotPt, resp, gprob/qprob);
-         PtRespNGenPFSig_wq_hist->Fill(usedPlotPt, resp, gprob/qprob);
+         if (gprob > 0 && qprob > 0) {
+            PtRespNGenPF_wg->Fill(usedPlotPt, resp, qprob/gprob);
+            PtRespNGenPF_wg_hist->Fill(usedPlotPt, resp, qprob/gprob);
+
+            PtRespNGenPF_wq->Fill(usedPlotPt, resp, gprob/qprob);
+            PtRespNGenPF_wq_hist->Fill(usedPlotPt, resp, gprob/qprob);
+         }
+         if (gprob_sig > 0 && qprob_sig > 0) {
+            PtRespNGenPFSig_wg->Fill(usedPlotPt, resp, qprob_sig/gprob_sig);
+            PtRespNGenPFSig_wg_hist->Fill(usedPlotPt, resp, qprob_sig/gprob_sig);
+
+            PtRespNGenPFSig_wq->Fill(usedPlotPt, resp, gprob_sig/qprob_sig);
+            PtRespNGenPFSig_wq_hist->Fill(usedPlotPt, resp, gprob_sig/qprob_sig);
+         }
 
          PerPtBin->Fill(usedPlotPt);
    }
