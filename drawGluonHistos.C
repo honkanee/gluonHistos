@@ -49,6 +49,7 @@ void drawGluonHistos() {
     TH1D* gluon_pt_resp_nGenJetPF_w_gaus;
     TH1D* gluon_pt_resp_nGenJetPFSig_w_gaus;
 
+    TH2D* gluon_pt_resp_hist;
     TH2D* gluon_nGenPF_probs;
     TH2D* gluon_nGenPFSig_probs;
     TH2D* gluon_genJetMass;
@@ -65,6 +66,7 @@ void drawGluonHistos() {
     f->GetObject("gluon_pt_resp_hist_1", gluon_pt_resp_gaus);
     f->GetObject("gluon_pt_resp_nGenJetPF_w_hist_1", gluon_pt_resp_nGenJetPF_w_gaus);
     f->GetObject("gluon_pt_resp_nGenJetPFSig_w_hist_1", gluon_pt_resp_nGenJetPFSig_w_gaus);
+    f->GetObject("gluon_pt_resp_hist_norm", gluon_pt_resp_hist);
 
     f2->GetObject("gluon_nGenPF_probs", gluon_nGenPF_probs);
     f2->GetObject("gluon_nGenPFSig_probs", gluon_nGenPFSig_probs);
@@ -83,6 +85,7 @@ void drawGluonHistos() {
     TH1D* quark_pt_resp_nGenJetPF_w_gaus;
     TH1D* quark_pt_resp_nGenJetPFSig_w_gaus;
 
+    TH2D* quark_pt_resp_hist;
     TH2D* quark_nGenPF_probs;
     TH2D* quark_nGenPFSig_probs;
     TH2D* quark_genJetMass;
@@ -100,6 +103,7 @@ void drawGluonHistos() {
     f->GetObject("quark_pt_resp_hist_1", quark_pt_resp_gaus);
     f->GetObject("quark_pt_resp_nGenJetPF_w_hist_1", quark_pt_resp_nGenJetPF_w_gaus);
     f->GetObject("quark_pt_resp_nGenJetPFSig_w_hist_1", quark_pt_resp_nGenJetPFSig_w_gaus);
+    f->GetObject("quark_pt_resp_hist_norm", quark_pt_resp_hist);
 
     f2->GetObject("quark_nGenPF_probs", quark_nGenPF_probs);
     f2->GetObject("quark_nGenPFSig_probs", quark_nGenPFSig_probs);
@@ -108,7 +112,7 @@ void drawGluonHistos() {
 
     //Pt response
     TH1D* h = tdrHist("h", "Response", 0.9, 1.2,
-    "gen p_{T} (GeV)", 30, 3500);
+    "reco p_{T} (GeV)", 30, 3500);
     h->GetXaxis()->SetNoExponent();
     TCanvas* c1 = tdrCanvas("c1", h, 4, 11, kSquare);
     h->GetXaxis()->SetMoreLogLabels();
@@ -307,15 +311,16 @@ void drawGluonHistos() {
     nGenJetPF_likelyhood->GetYaxis()->SetTitle("n_{GenJetPF}");
     nGenJetPF_likelyhood->Draw("colz");
 
-
     //nUEPF
     TCanvas* c9 = new TCanvas("c9", "c9", 700, 700);
+    c9->SetRightMargin(0.15);
     nUEPF_nGenPF_hist->SetAxisRange(0, 100, "X");
     nUEPF_nGenPF_hist->Draw("colz");
     nUEPF_nGenPF_hist->GetXaxis()->SetTitle("nGenPF");
     nUEPF_nGenPF_hist->GetYaxis()->SetTitle("nUEPF_perA");
 
     TCanvas* c10 = new TCanvas("c10", "c10", 700, 700);
+    c10->SetRightMargin(0.15);
     nUEPF_pt_hist->SetAxisRange(30, 3500, "X");
     nUEPF_pt_hist->Draw("colz");
     nUEPF_pt_hist->GetXaxis()->SetMoreLogLabels();
@@ -323,4 +328,47 @@ void drawGluonHistos() {
     nUEPF_pt_hist->GetXaxis()->SetTitle("gen p_{T}");
     nUEPF_pt_hist->GetYaxis()->SetTitle("nUEPF_perA");
     gPad->SetLogx();
+
+    //Pt histograms
+    TCanvas* c5 = new TCanvas("c5","c5",1400,700);
+    c5->Divide(2,1);
+
+    c5->cd(1);
+    c5->cd(1)->SetRightMargin(0.15);
+    gluon_pt_resp_hist->GetZaxis()->SetTitle("P");
+    gPad->SetLogz();
+    gPad->SetLogx();
+    gluon_pt_resp_hist->SetAxisRange(30, 3500, "X");
+    gluon_pt_resp_hist->Draw("colz");
+    gluon_pt_resp_hist->GetXaxis()->SetMoreLogLabels();
+    gluon_pt_resp_hist->GetXaxis()->SetNoExponent();
+//    gluon_pt_resp->SetMarkerColor(kBlack);
+    gluon_pt_resp->Draw("same");
+    gluon_pt_resp_gaus->Draw("same");
+
+    TLine* line_up = new TLine(30, 1.2, 3500, 1.2);
+    line_up->SetLineColor(kYellow);
+    line_up->SetLineWidth(2);
+    line_up->Draw();
+
+    TLine* line_down =new TLine(30, 0.8, 3500, 0.8);
+    line_down->SetLineColor(kYellow);
+    line_down->SetLineWidth(2);
+    line_down->Draw();
+
+    c5->cd(2);
+    c5->cd(2)->SetRightMargin(0.15);
+    quark_pt_resp_hist->GetZaxis()->SetTitle("P");
+    gPad->SetLogz();
+    gPad->SetLogx();
+    quark_pt_resp_hist->SetAxisRange(30, 3500, "X");
+    quark_pt_resp_hist->Draw("colz");
+    quark_pt_resp_hist->GetXaxis()->SetMoreLogLabels();
+    quark_pt_resp_hist->GetXaxis()->SetNoExponent();
+//    quark_pt_resp->SetMarkerColor(kBlack);
+    quark_pt_resp->Draw("same");
+    quark_pt_resp_gaus->Draw("same");
+
+    line_up->Draw();
+    line_down->Draw();
 }

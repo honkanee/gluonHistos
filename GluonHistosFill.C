@@ -107,11 +107,11 @@ fChain->SetBranchStatus("*jetArea",1);
    TProfile* PtRespNGenPFSig_wq = new TProfile("pt_resp_nGenJetPFSig_wq", "", NBINS, ptrange);
 
    TH1D* PerPtBin = new TH1D("per_pt_bin", "", NBINS, ptrange);
-   TH2D* PtResp_hist = new TH2D("pt_resp_hist", "", NBINS, ptrange, 1000, 0.5, 1.5);
-   TH2D* PtRespNGenPF_wg_hist = new TH2D("pt_resp_nGenJetPF_wg_hist", "", NBINS, ptrange, 1000, 0.5, 1.5);
-   TH2D* PtRespNGenPFSig_wg_hist = new TH2D("pt_resp_nGenJetPFSig_wg_hist", "", NBINS, ptrange, 1000, 0.5, 1.5);
-   TH2D* PtRespNGenPF_wq_hist = new TH2D("pt_resp_nGenJetPF_wq_hist", "", NBINS, ptrange, 1000, 0.5, 1.5);
-   TH2D* PtRespNGenPFSig_wq_hist = new TH2D("pt_resp_nGenJetPFSig_wq_hist", "", NBINS, ptrange, 1000, 0.5, 1.5);
+   TH2D* PtResp_hist = new TH2D("pt_resp_hist", "", NBINS, ptrange, 100, 0.5, 1.5);
+   TH2D* PtRespNGenPF_wg_hist = new TH2D("pt_resp_nGenJetPF_wg_hist", "", NBINS, ptrange, 100, 0.5, 1.5);
+   TH2D* PtRespNGenPFSig_wg_hist = new TH2D("pt_resp_nGenJetPFSig_wg_hist", "", NBINS, ptrange, 100, 0.5, 1.5);
+   TH2D* PtRespNGenPF_wq_hist = new TH2D("pt_resp_nGenJetPF_wq_hist", "", NBINS, ptrange, 100, 0.5, 1.5);
+   TH2D* PtRespNGenPFSig_wq_hist = new TH2D("pt_resp_nGenJetPFSig_wq_hist", "", NBINS, ptrange, 100, 0.5, 1.5);
 
 
    // Gluons
@@ -123,10 +123,10 @@ fChain->SetBranchStatus("*jetArea",1);
 
    TH2D* gNGenPF_w_hist = new TH2D("gluon_nGenPF_hist_w", "", NBINS, ptrange, NPFBINS, pfrange);
    TH1D* gPerPtBin = new TH1D("gluons_per_pt_bin", "", NBINS, ptrange);
-   TH2D* gPtResp_hist = new TH2D("gluon_pt_resp_hist", "", NBINS, ptrange, 1000, 0.5, 1.5);
-   TH2D* gPtResp_hist_norm = new TH2D("gluon_pt_resp_hist_norm", "", NBINS, ptrange, 1000, 0.5,1.5);
-   TH2D* gPtRespNGenPF_w_hist = new TH2D("gluon_pt_resp_nGenJetPF_w_hist", "", NBINS, ptrange, 1000, 0.5, 1.5);
-   TH2D* gPtRespNGenPFSig_w_hist = new TH2D("gluon_pt_resp_nGenJetPFSig_w_hist", "", NBINS, ptrange, 1000, 0.5, 1.5);
+   TH2D* gPtResp_hist = new TH2D("gluon_pt_resp_hist", "", NBINS, ptrange, 100, 0.5, 1.5);
+   TH2D* gPtResp_hist_norm = new TH2D("gluon_pt_resp_hist_norm", "", NBINS, ptrange, 100, 0.5,1.5);
+   TH2D* gPtRespNGenPF_w_hist = new TH2D("gluon_pt_resp_nGenJetPF_w_hist", "", NBINS, ptrange, 100, 0.5, 1.5);
+   TH2D* gPtRespNGenPFSig_w_hist = new TH2D("gluon_pt_resp_nGenJetPFSig_w_hist", "", NBINS, ptrange, 100, 0.5, 1.5);
 
    // Quarks
    TProfile* qPtResp = new TProfile("quark_pt_resp", "", NBINS, ptrange);
@@ -137,10 +137,10 @@ fChain->SetBranchStatus("*jetArea",1);
 
    TH2D* qNGenPF_w_hist = new TH2D("quark_nGenPF_hist_w", "", NBINS, ptrange, NPFBINS, pfrange);
    TH1D* qPerPtBin = new TH1D("quarks_per_pt_bin", "", NBINS, ptrange);
-   TH2D* qPtResp_hist = new TH2D("quark_pt_resp_hist", "", NBINS, ptrange, 1000, 0.5, 1.5);
-   TH2D* qPtResp_hist_norm = new TH2D("quark_pt_resp_hist_norm", "", NBINS, ptrange, 1000, 0.5,1.5);
-   TH2D* qPtRespNGenPF_w_hist = new TH2D("quark_pt_resp_nGenJetPF_w_hist", "", NBINS, ptrange, 1000, 0.5, 1.5);
-   TH2D* qPtRespNGenPFSig_w_hist = new TH2D("quark_pt_resp_nGenJetPFSig_w_hist", "", NBINS, ptrange, 1000, 0.5, 1.5);
+   TH2D* qPtResp_hist = new TH2D("quark_pt_resp_hist", "", NBINS, ptrange, 100, 0.5, 1.5);
+   TH2D* qPtResp_hist_norm = new TH2D("quark_pt_resp_hist_norm", "", NBINS, ptrange, 100, 0.5,1.5);
+   TH2D* qPtRespNGenPF_w_hist = new TH2D("quark_pt_resp_nGenJetPF_w_hist", "", NBINS, ptrange, 100, 0.5, 1.5);
+   TH2D* qPtRespNGenPFSig_w_hist = new TH2D("quark_pt_resp_nGenJetPFSig_w_hist", "", NBINS, ptrange, 100, 0.5, 1.5);
 
    TH2D* nGenJetPF_probsRatio = new TH2D("nGenJetPF_likelyhood", "", NBINS, ptrange, NPFBINS, pfrange);
 
@@ -350,11 +350,11 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
    double dR_out = 1.0;
    double nGenPFSig;
 
-   TH1D* nUEPF_perA_hist = new TH1D("UE_nPF_perA", "", int(80./2.75), 0, int(80./2.75)*2.75);
-   TH2D* nUEPF_perA_nGenPF_hist = new TH2D("nUEPF_perA_nGenPF_hist", "", npfbins, pfrange, int(80./2.75), 0, int(80./2.75)*2.75);
-   TH2D* nUEPF_perA_nGenPF_probs = new TH2D("nUEPF_perA_nGenPF_probs", "", npfbins, pfrange, int(80./2.75), 0, int(80./2.75)*2.75);
-   TH2D* nUEPF_perA_genJetPt_hist = new TH2D("nUEPF_perA_genJetPt_hist", "", nptbins, ptrange, int(80./2.75), 0, int(80./2.75)*2.75);
-   TH2D* nUEPF_perA_genJetPt_probs = new TH2D("nUEPF_perA_genJetPt_probs", "", nptbins, ptrange, int(80./2.75), 0, int(80./2.75)*2.75);
+   TH1D* nUEPF_perA_hist = new TH1D("UE_nPF_perA", "", int(80./2.75)+3, 0, int(80./2.75)*2.75);
+   TH2D* nUEPF_perA_nGenPF_hist = new TH2D("nUEPF_perA_nGenPF_hist", "", npfbins, pfrange, int(80./2.75)+3, 0, int(80./2.75)*2.75);
+   TH2D* nUEPF_perA_nGenPF_probs = new TH2D("nUEPF_perA_nGenPF_probs", "", npfbins, pfrange, int(80./2.75)+3, 0, int(80./2.75)*2.75);
+   TH2D* nUEPF_perA_genJetPt_hist = new TH2D("nUEPF_perA_genJetPt_hist", "", nptbins, ptrange, int(80./2.75)+3, 0, int(80./2.75)*2.75);
+   TH2D* nUEPF_perA_genJetPt_probs = new TH2D("nUEPF_perA_genJetPt_probs", "", nptbins, ptrange, int(80./2.75)+3, 0, int(80./2.75)*2.75);
    TProfile* nUEPF_nGenPF = new TProfile("nUEPF_nGenPF", "", npfbins, pfrange);
 
    Long64_t nentries = fChain->GetEntriesFast();

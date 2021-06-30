@@ -29,8 +29,8 @@ class GluonHistosFill {
 public :
 
    bool recoWeighted = true;
-   bool recoPlotted = false;
-   bool isPFSig_perEvent = true;
+   bool recoPlotted = true;
+   bool isPFSig_perEvent = false;
    double usedWeightPt;
    double usedPlotPt;
 
