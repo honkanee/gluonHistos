@@ -28,8 +28,9 @@ const int N_GenJetPF = 500;
 class GluonHistosFill {
 public :
 
-   bool recoWeighted = false;
+   bool recoWeighted = true;
    bool recoPlotted = false;
+   bool isPFSig_perEvent = true;
    double usedWeightPt;
    double usedPlotPt;
 
