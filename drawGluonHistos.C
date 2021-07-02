@@ -25,6 +25,11 @@ void drawGluonHistos() {
     TH2D* nUEPF_pt_hist;
     TH2D* nUEPF_nGenPF_hist;
 
+    TH1D* dR_nPF_fromPV0;
+    TH1D* dR_nPF_fromPV1;
+    TH1D* dR_nPF_fromPV2;
+    TH1D* dR_nPF_fromPV3;
+
     f->GetObject("pt_resp", pt_resp);
     f->GetObject("pt_resp_nGenJetPF_wg", pt_resp_nGenJetPF_wg);
     f->GetObject("pt_resp_nGenJetPFSig_wg", pt_resp_nGenJetPFSig_wg);
@@ -35,6 +40,11 @@ void drawGluonHistos() {
 
     f2->GetObject("nUEPF_perA_genJetPt_probs", nUEPF_pt_hist);
     f2->GetObject("nUEPF_perA_nGenPF_probs", nUEPF_nGenPF_hist);
+
+    f2->GetObject("dR_nPF_fromPV0", dR_nPF_fromPV0);
+    f2->GetObject("dR_nPF_fromPV1", dR_nPF_fromPV1);
+    f2->GetObject("dR_nPF_fromPV2", dR_nPF_fromPV2);
+    f2->GetObject("dR_nPF_fromPV3", dR_nPF_fromPV3);
 
     // Gluons
     TProfile* gluon_pt_resp;
@@ -54,6 +64,11 @@ void drawGluonHistos() {
     TH2D* gluon_nGenPFSig_probs;
     TH2D* gluon_genJetMass;
 
+    TH1D* gluon_dR_nPF_fromPV0;
+    TH1D* gluon_dR_nPF_fromPV1;
+    TH1D* gluon_dR_nPF_fromPV2;
+    TH1D* gluon_dR_nPF_fromPV3;
+
     f->GetObject("gluon_pt_resp", gluon_pt_resp);
     f->GetObject("gluon_pt_resp_nGenJetPF", gluon_pt_resp_nGenJetPF);
     f->GetObject("gluon_nGenPF_prof", gluon_nGenPF);
@@ -71,6 +86,10 @@ void drawGluonHistos() {
     f2->GetObject("gluon_nGenPF_probs", gluon_nGenPF_probs);
     f2->GetObject("gluon_nGenPFSig_probs", gluon_nGenPFSig_probs);
 
+    f2->GetObject("gluon_dR_nPF_fromPV0", gluon_dR_nPF_fromPV0);
+    f2->GetObject("gluon_dR_nPF_fromPV1", gluon_dR_nPF_fromPV1);
+    f2->GetObject("gluon_dR_nPF_fromPV2", gluon_dR_nPF_fromPV2);
+    f2->GetObject("gluon_dR_nPF_fromPV3", gluon_dR_nPF_fromPV3);
 
     // Quarks
     TProfile* quark_pt_resp;
@@ -91,6 +110,11 @@ void drawGluonHistos() {
     TH2D* quark_genJetMass;
     TH2D* nGenJetPF_likelyhood;
 
+    TH1D* quark_dR_nPF_fromPV0;
+    TH1D* quark_dR_nPF_fromPV1;
+    TH1D* quark_dR_nPF_fromPV2;
+    TH1D* quark_dR_nPF_fromPV3;
+
     f->GetObject("quark_pt_resp", quark_pt_resp);
     f->GetObject("quark_pt_resp_nGenJetPF", quark_pt_resp_nGenJetPF);
     f->GetObject("quark_nGenPF_prof", quark_nGenPF);
@@ -107,6 +131,11 @@ void drawGluonHistos() {
 
     f2->GetObject("quark_nGenPF_probs", quark_nGenPF_probs);
     f2->GetObject("quark_nGenPFSig_probs", quark_nGenPFSig_probs);
+
+    f2->GetObject("quark_dR_nPF_fromPV0", quark_dR_nPF_fromPV0);
+    f2->GetObject("quark_dR_nPF_fromPV1", quark_dR_nPF_fromPV1);
+    f2->GetObject("quark_dR_nPF_fromPV2", quark_dR_nPF_fromPV2);
+    f2->GetObject("quark_dR_nPF_fromPV3", quark_dR_nPF_fromPV3);
 
     f->GetObject("nGenJetPF_likelyhood", nGenJetPF_likelyhood);
 
@@ -371,4 +400,83 @@ void drawGluonHistos() {
 
     line_up->Draw();
     line_down->Draw();
+
+    // nPF_from_PV histograms
+
+    TH1D* h5 = tdrHist("h5", "N", 0, 3e7, "dR", 0, 1.5);
+    tdrCanvas("c14", h5, 4, 11, true);
+
+    dR_nPF_fromPV0->SetLineColor(kBlack);
+    dR_nPF_fromPV0->Draw("same");
+    gluon_dR_nPF_fromPV0->SetLineColor(kRed);
+    gluon_dR_nPF_fromPV0->Draw("same");
+    quark_dR_nPF_fromPV0->SetLineColor(kBlue);
+    quark_dR_nPF_fromPV0->Draw("same");
+
+    TLegend *leg4 = tdrLeg(0.37,0.90-5*0.045,0.57,0.90);
+    leg4->AddEntry(dR_nPF_fromPV0, "All", "PLE");
+    leg4->AddEntry(gluon_dR_nPF_fromPV0, "Gluons", "PLE");
+    leg4->AddEntry(quark_dR_nPF_fromPV0, "Quarks", "PLE");
+
+    tex->DrawLatex(0.5, 0.95,"nPF_{fromPV} = 0");
+
+    TH1D* h6 = tdrHist("h6", "N", 0, 15e6, "dR", 0, 1.5);
+    tdrCanvas("c11", h6, 4, 11, true);
+
+    dR_nPF_fromPV1->SetLineColor(kBlack);
+    dR_nPF_fromPV1->Draw("same");
+    gluon_dR_nPF_fromPV1->SetLineColor(kRed);
+    gluon_dR_nPF_fromPV1->Draw("same");
+    quark_dR_nPF_fromPV1->SetLineColor(kBlue);
+    quark_dR_nPF_fromPV1->Draw("same");
+
+    tex->DrawLatex(0.5, 0.95,"nPF_{fromPV} = 1");
+
+    leg4->Draw();
+
+    TH1D* h7 = tdrHist("h7", "N", 0, 8e6, "dR", 0, 1.5);
+    tdrCanvas("c12", h7, 4, 11, true);
+    
+    dR_nPF_fromPV2->SetLineColor(kBlack);
+    dR_nPF_fromPV2->Draw("same");
+    gluon_dR_nPF_fromPV2->SetLineColor(kRed);
+    gluon_dR_nPF_fromPV2->Draw("same");
+    quark_dR_nPF_fromPV2->SetLineColor(kBlue);
+    quark_dR_nPF_fromPV2->Draw("same");
+
+    tex->DrawLatex(0.5, 0.95,"nPF_{fromPV} = 2");
+    leg4->Draw();
+
+    TH1D* h8 = tdrHist("h8", "N", 0, 32e6, "dR", 0, 1.5);
+    tdrCanvas("c13", h8, 4, 11, true);
+
+    dR_nPF_fromPV3->SetLineColor(kBlack);
+    dR_nPF_fromPV3->Draw("same");
+    gluon_dR_nPF_fromPV3->SetLineColor(kRed);
+    gluon_dR_nPF_fromPV3->Draw("same");
+    quark_dR_nPF_fromPV3->SetLineColor(kBlue);
+    quark_dR_nPF_fromPV3->Draw("same");
+
+    tex->DrawLatex(0.5, 0.95,"nPF_{fromPV} = 3");
+    leg4->Draw();
+
+    TH1D* h9 = tdrHist("h9", "N", 0, 10000000, "dR", 0, 1.5);
+    tdrCanvas("c14", h9, 4, 11, true);
+
+    dR_nPF_fromPV0->SetLineColor(kBlack);
+    dR_nPF_fromPV0->Draw();
+    dR_nPF_fromPV1->SetLineColor(kMagenta);
+    dR_nPF_fromPV1->Draw("same");
+    dR_nPF_fromPV2->SetLineColor(kGreen);
+    dR_nPF_fromPV2->Draw("same");
+    dR_nPF_fromPV3->SetLineColor(kCyan+2);
+    dR_nPF_fromPV3->Draw("same");
+
+    tex->DrawLatex(0.5, 0.95,"All");
+
+    TLegend *leg5 = tdrLeg(0.37,0.90-5*0.045,0.57,0.90);
+    leg5->AddEntry(dR_nPF_fromPV0, "nPF_{fromPV} = 0", "PLE");
+    leg5->AddEntry(dR_nPF_fromPV1, "nPF_{fromPV} = 1", "PLE");
+    leg5->AddEntry(dR_nPF_fromPV2, "nPF_{fromPV} = 2", "PLE");
+    leg5->AddEntry(dR_nPF_fromPV3, "nPF_{fromPV} = 3", "PLE");
 }
