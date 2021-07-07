@@ -7,7 +7,7 @@
 #ifndef GluonHistosFill_h
 #define GluonHistosFill_h
 
-#define SINGLE_TREE
+//#define SINGLE_TREE
 #define RECREATE_WEIGHTS
 
 #include <iostream>
@@ -28,8 +28,9 @@ const int N_GenJetPF = 500;
 class GluonHistosFill {
 public :
 
-   bool recoWeighted = true;
-   bool recoPlotted = true;
+   bool recoWeighted = false;
+   bool rawWeighted = false;
+   bool recoPlotted = false;
    bool isPFSig_perEvent = false;
    double usedWeightPt;
    double usedPlotPt;
