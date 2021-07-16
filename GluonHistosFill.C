@@ -11,6 +11,15 @@
 
 #include <vector>
 
+char* char_add(string a, string b) {
+   string str = a + b;
+   char *cstr = new char[str.length() + 1];
+   strcpy(cstr, str.c_str());
+   return cstr;
+}
+
+enum {GLUON, QUARK, ALL};
+
 void GluonHistosFill::Loop()
 {
 //   In a ROOT session, you can do:
@@ -86,17 +95,62 @@ fChain->SetBranchStatus("jetRawPt", 1);
    TH2D* gHist2_sig;
    TH2D* qHist2_sig;
 
+   TH2D* gJetGirth_probs;
+   TH2D* qJetGirth_probs;
+
    f->GetObject("gluon_nGenPF_probs", gHist2);
    f->GetObject("quark_nGenPF_probs", qHist2);
    f->GetObject("UE_nPF_perA", nUEPF_perA_hist);
    f->GetObject("gluon_nGenPFSig_probs", gHist2_sig);
    f->GetObject("quark_nGenPFSig_probs", qHist2_sig);
+   f->GetObject("gluon_jetGirth_probs", gJetGirth_probs);
+   f->GetObject("quark_jetGirth_probs", qJetGirth_probs);
 
    #ifdef SINGLE_TREE
    TFile* file = new TFile("outputGluonHistos_single.root", "recreate");
    #else
    TFile* file = new TFile("outputGluonHistos.root", "recreate");
    #endif
+
+   vector<TProfile*> ptResp;
+   vector<TProfile*> nGenPF;
+   vector<TProfile*> nGenPF_w;
+   vector<TProfile*> ptRespNGenPF_w;
+   vector<TProfile*> ptRespNGenPFSig_w;
+
+   vector<TProfile*> ptRespJetGirth_w;
+
+   vector<TH2D*> nGenPF_w_hist;
+   vector<TH1D*> perPtBin;
+   vector<TH2D*> ptResp_hist;
+   vector<TH2D*> ptResp_hist_norm;
+   vector<TH2D*> ptRespNGenPF_w_hist;
+   vector<TH2D*> ptRespNGenPFSig_w_hist;
+
+   vector<TH1D*> ptResp_gaus;
+   vector<TH1D*> ptRespNGenPF_w_gaus;
+   vector<TH1D*> ptRespNGenPFSig_w_gaus;
+
+   for (string str : {"gluon_", "quark_"}) {
+      ptResp.push_back(new TProfile(char_add(str, "pt_resp"), "", NBINS, ptrange));
+      nGenPF.push_back(new TProfile(char_add(str, "nGenPF_prof"), "", NBINS, ptrange));
+      nGenPF_w.push_back(new TProfile(char_add(str, "nGenPF_prof_w"), "", NBINS, ptrange));
+      ptRespNGenPF_w.push_back(new TProfile(char_add(str, "pt_resp_nGenJetPF_w"), "", NBINS, ptrange));
+      ptRespNGenPFSig_w.push_back(new TProfile(char_add(str, "pt_resp_nGenJetPFSig_w"), "", NBINS, ptrange));
+
+      ptRespJetGirth_w.push_back(new TProfile(char_add(str, "pt_resp_jetGirth_w"), "", NBINS, ptrange));
+
+      nGenPF_w_hist.push_back(new TH2D(char_add(str, "nGenPF_hist_w"), "", NBINS, ptrange, NPFBINS, pfrange));
+      perPtBin.push_back(new TH1D(char_add(str, "gluons_per_pt_bin"), "", NBINS, ptrange));
+      ptResp_hist.push_back(new TH2D(char_add(str, "pt_resp_hist"), "", NBINS, ptrange, 100, 0.5, 1.5));
+      ptResp_hist_norm.push_back(new TH2D(char_add(str, "pt_resp_hist_norm"), "", NBINS, ptrange, 100, 0.5,1.5));
+      ptRespNGenPF_w_hist.push_back(new TH2D(char_add(str, "pt_resp_nGenJetPF_w_hist"), "", NBINS, ptrange, 100, 0.5, 1.5));
+      ptRespNGenPFSig_w_hist.push_back(new TH2D(char_add(str, "pt_resp_nGenJetPFSig_w_hist"), "", NBINS, ptrange, 100, 0.5, 1.5));
+
+      ptResp_gaus.push_back(new TH1D(char_add(str, "pt_resp_gaus"), "", NBINS, ptrange));
+      ptRespNGenPF_w_gaus.push_back(new TH1D(char_add(str, "pt_resp_nGenJetPF_w_gaus"), "", NBINS, ptrange));
+      ptRespNGenPFSig_w_gaus.push_back(new TH1D(char_add(str, "pt_resp_nGenJetPFSig_w_gaus"), "", NBINS, ptrange));
+   }
 
    //All
    TProfile* PtResp = new TProfile("pt_resp", "", NBINS, ptrange);
@@ -121,44 +175,9 @@ fChain->SetBranchStatus("jetRawPt", 1);
    TH1D* PtRespNGenPF_wq_gaus = new TH1D("pt_resp_nGenJetPF_wq_gaus", "", NBINS, ptrange);
    TH1D* PtRespNGenPFSig_wq_gaus = new TH1D("pt_resp_nGenJetPFSig_wq_gaus", "", NBINS, ptrange);
 
-   // Gluons
-   TProfile* gPtResp = new TProfile("gluon_pt_resp", "", NBINS, ptrange);
-   TProfile* gNGenPF = new TProfile("gluon_nGenPF_prof", "", NBINS, ptrange);
-   TProfile* gNGenPF_w = new TProfile("gluon_nGenPF_prof_w", "", NBINS, ptrange);
-   TProfile* gPtRespNGenPF_w = new TProfile("gluon_pt_resp_nGenJetPF_w", "", NBINS, ptrange);
-   TProfile* gPtRespNGenPFSig_w = new TProfile("gluon_pt_resp_nGenJetPFSig_w", "", NBINS, ptrange);
-
-   TH2D* gNGenPF_w_hist = new TH2D("gluon_nGenPF_hist_w", "", NBINS, ptrange, NPFBINS, pfrange);
-   TH1D* gPerPtBin = new TH1D("gluons_per_pt_bin", "", NBINS, ptrange);
-   TH2D* gPtResp_hist = new TH2D("gluon_pt_resp_hist", "", NBINS, ptrange, 100, 0.5, 1.5);
-   TH2D* gPtResp_hist_norm = new TH2D("gluon_pt_resp_hist_norm", "", NBINS, ptrange, 100, 0.5,1.5);
-   TH2D* gPtRespNGenPF_w_hist = new TH2D("gluon_pt_resp_nGenJetPF_w_hist", "", NBINS, ptrange, 100, 0.5, 1.5);
-   TH2D* gPtRespNGenPFSig_w_hist = new TH2D("gluon_pt_resp_nGenJetPFSig_w_hist", "", NBINS, ptrange, 100, 0.5, 1.5);
-
-   TH1D* gPtResp_gaus = new TH1D("gluon_pt_resp_gaus", "", NBINS, ptrange);
-   TH1D* gPtRespNGenPF_w_gaus = new TH1D("gluon_pt_resp_nGenJetPF_w_gaus", "", NBINS, ptrange);
-   TH1D* gPtRespNGenPFSig_w_gaus = new TH1D("gluon_pt_resp_nGenJetPFSig_w_gaus", "", NBINS, ptrange);
-
-   // Quarks
-   TProfile* qPtResp = new TProfile("quark_pt_resp", "", NBINS, ptrange);
-   TProfile* qNGenPF = new TProfile("quark_nGenPF_prof", "", NBINS, ptrange);
-   TProfile* qNGenPF_w = new TProfile("quark_nGenPF_prof_w", "", NBINS, ptrange);
-   TProfile* qPtRespNGenPF_w = new TProfile("quark_pt_resp_nGenJetPF_w", "", NBINS, ptrange);
-   TProfile* qPtRespNGenPFSig_w = new TProfile("quark_pt_resp_nGenJetPFSig_w", "", NBINS, ptrange);
-
-   TH2D* qNGenPF_w_hist = new TH2D("quark_nGenPF_hist_w", "", NBINS, ptrange, NPFBINS, pfrange);
-   TH1D* qPerPtBin = new TH1D("quarks_per_pt_bin", "", NBINS, ptrange);
-   TH2D* qPtResp_hist = new TH2D("quark_pt_resp_hist", "", NBINS, ptrange, 100, 0.5, 1.5);
-   TH2D* qPtResp_hist_norm = new TH2D("quark_pt_resp_hist_norm", "", NBINS, ptrange, 100, 0.5,1.5);
-   TH2D* qPtRespNGenPF_w_hist = new TH2D("quark_pt_resp_nGenJetPF_w_hist", "", NBINS, ptrange, 100, 0.5, 1.5);
-   TH2D* qPtRespNGenPFSig_w_hist = new TH2D("quark_pt_resp_nGenJetPFSig_w_hist", "", NBINS, ptrange, 100, 0.5, 1.5);
-
-   TH1D* qPtResp_gaus = new TH1D("quark_pt_resp_gaus", "", NBINS, ptrange);
-   TH1D* qPtRespNGenPF_w_gaus = new TH1D("quark_pt_resp_nGenJetPF_w_gaus", "", NBINS, ptrange);
-   TH1D* qPtRespNGenPFSig_w_gaus = new TH1D("quark_pt_resp_nGenJetPFSig_w_gaus", "", NBINS, ptrange);
-
    TH2D* nGenJetPF_probsRatio = new TH2D("nGenJetPF_likelyhood", "", NBINS, ptrange, NPFBINS, pfrange);
    TH2D* nGenPF_probs_sum = (TH2D*)gHist2->Clone("nGenPF_probs_sum");
+
 
    nGenPF_probs_sum->Add(qHist2);
    nGenJetPF_probsRatio->Divide(qHist2, nGenPF_probs_sum);
@@ -170,9 +189,12 @@ fChain->SetBranchStatus("jetRawPt", 1);
    }
 
    double resp;
-   double w;
+   double nGenJetPF_w;
+   double jetGirth_w;
    double gprob;
    double qprob;
+   double gprob_jetGirth;
+   double qprob_jetGirth;
 
    double nUEPF_per_A = nUEPF_perA_hist->GetMean();
    int nPFsum;
@@ -206,13 +228,18 @@ fChain->SetBranchStatus("jetRawPt", 1);
             if (rawWeighted) {
                usedWeightPt = jetRawPt;
             }
-            else usedWeightPt = genJetPt;
+            else {
+               usedWeightPt = genJetPt;
+            }
          }
 
-         resp = jetRawPt/genJetPt;
-         if (rawWeighted) resp = jetRawPt/genJetPt;
+         resp = jetPt/genJetPt; // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
          gprob = gHist2->GetBinContent(gHist2->FindBin(usedWeightPt, nGenJetPF));
          qprob = qHist2->GetBinContent(qHist2->FindBin(usedWeightPt, nGenJetPF));
+
+         gprob_jetGirth = gJetGirth_probs->GetBinContent(gJetGirth_probs->FindBin(usedWeightPt, jetGirth));
+         qprob_jetGirth = qJetGirth_probs->GetBinContent(qJetGirth_probs->FindBin(usedWeightPt, jetGirth));
 
          if (isPFSig_perEvent) {
                nPFsum = 0;
@@ -228,43 +255,45 @@ fChain->SetBranchStatus("jetRawPt", 1);
          gprob_sig = gHist2_sig->GetBinContent(gHist2_sig->FindBin(usedWeightPt, nGenPFSig));
          qprob_sig = qHist2_sig->GetBinContent(qHist2_sig->FindBin(usedWeightPt, nGenPFSig));
          if (isPhysG) {
-            gPtResp->Fill(usedPlotPt, resp);
-            gPtResp_hist->Fill(usedPlotPt, resp);
-            gNGenPF->Fill(usedPlotPt, nGenJetPF);
-            gPerPtBin->Fill(usedPlotPt);
+            ptResp.at(GLUON)->Fill(usedPlotPt, resp);
+            ptResp_hist.at(GLUON)->Fill(usedPlotPt, resp);
+            nGenPF.at(GLUON)->Fill(usedPlotPt, nGenJetPF);
+            perPtBin.at(GLUON)->Fill(usedPlotPt);
             if (gprob_sig > 0 && qprob_sig > 0) {
                w_sig = qprob_sig/gprob_sig;
-               gPtRespNGenPFSig_w->Fill(usedPlotPt, resp, w_sig);
-               gPtRespNGenPFSig_w_hist->Fill(usedPlotPt, resp, w_sig);
+               ptRespNGenPFSig_w.at(GLUON)->Fill(usedPlotPt, resp, w_sig);
+               ptRespNGenPFSig_w_hist.at(GLUON)->Fill(usedPlotPt, resp, w_sig);
             }
             if (gprob > 0 && qprob > 0) {
-               w = qprob/gprob;
-               gPtRespNGenPF_w->Fill(usedPlotPt, resp, w);
-               gPtRespNGenPF_w_hist->Fill(usedPlotPt, resp, w);
+               nGenJetPF_w = qprob/gprob;
+               ptRespNGenPF_w.at(GLUON)->Fill(usedPlotPt, resp, nGenJetPF_w);
+               ptRespNGenPF_w_hist.at(GLUON)->Fill(usedPlotPt, resp, nGenJetPF_w);
             }
-            else w = 0;
-            gNGenPF_w_hist->Fill(usedPlotPt, nGenJetPF, w);
-            gNGenPF_w->Fill(usedPlotPt, nGenJetPF, w);
+            if (gprob_jetGirth > 0 && qprob_jetGirth > 0) {
+               jetGirth_w = qprob_jetGirth/gprob_jetGirth;
+               ptRespJetGirth_w.at(GLUON)->Fill(usedPlotPt, resp, jetGirth_w);
+            }
          }
          else {
             if (isPhysUDS) {
-               qPtResp->Fill(usedPlotPt, resp);
-               qPtResp_hist->Fill(usedPlotPt, resp);
-               qNGenPF->Fill(usedPlotPt, nGenJetPF);
-               qPerPtBin->Fill(usedPlotPt);
+               ptResp.at(QUARK)->Fill(usedPlotPt, resp);
+               ptResp_hist.at(QUARK)->Fill(usedPlotPt, resp);
+               nGenPF.at(QUARK)->Fill(usedPlotPt, nGenJetPF);
+               perPtBin.at(QUARK)->Fill(usedPlotPt);
                if (gprob_sig > 0 && qprob_sig > 0) {
                   w_sig = gprob_sig/qprob_sig;
-                  qPtRespNGenPFSig_w->Fill(usedPlotPt, resp, w_sig);
-                  qPtRespNGenPFSig_w_hist->Fill(usedPlotPt, resp, w_sig);
+                  ptRespNGenPFSig_w.at(QUARK)->Fill(usedPlotPt, resp, w_sig);
+                  ptRespNGenPFSig_w_hist.at(QUARK)->Fill(usedPlotPt, resp, w_sig);
                }
                if (gprob > 0 && qprob > 0) {
-                  w = gprob/qprob;
-                  qPtRespNGenPF_w->Fill(usedPlotPt, resp, w);
-                  qPtRespNGenPF_w_hist->Fill(usedPlotPt, resp, w);
+                  nGenJetPF_w = gprob/qprob;
+                  ptRespNGenPF_w.at(QUARK)->Fill(usedPlotPt, resp, nGenJetPF_w);
+                  ptRespNGenPF_w_hist.at(QUARK)->Fill(usedPlotPt, resp, nGenJetPF_w);
                }
-               else w = 0;
-               qNGenPF_w_hist->Fill(usedPlotPt, nGenJetPF, w);
-               qNGenPF_w->Fill(usedPlotPt, nGenJetPF, w);
+               if (gprob_jetGirth > 0 && qprob_jetGirth > 0) {
+                  jetGirth_w = gprob_jetGirth/qprob_jetGirth;
+                  ptRespJetGirth_w.at(QUARK)->Fill(usedPlotPt, resp, jetGirth_w);
+            }
             }
          }
          //All
@@ -287,82 +316,68 @@ fChain->SetBranchStatus("jetRawPt", 1);
 
          PerPtBin->Fill(usedPlotPt);
    }
-}
+   }
 
-double fit_up = 1.2;
-double fit_down = 0.8;
+   double fit_up = 1.2;
+   double fit_down = 0.8;
 
-double cap = 0.12;
+   double cap = 0.12;
 
-double mean;
-TH1D* py;
-TF1 *g1;
-TH2D* gbounds = new TH2D("gluon_resp_gaus_bounds", "", NBINS, ptrange, 100, 0.5, 1.5);
-TH2D* qbounds = new TH2D("quark_resp_gaus_bounds", "", NBINS, ptrange, 100, 0.5, 1.5);
+   double mean;
+   TH1D* py;
+   TF1 *g1;
+   TH2D* gbounds = new TH2D("gluon_resp_gaus_bounds", "", NBINS, ptrange, 100, 0.5, 1.5);
+   TH2D* qbounds = new TH2D("quark_resp_gaus_bounds", "", NBINS, ptrange, 100, 0.5, 1.5);
 
-vector<TH2D*> respHists = {PtResp_hist, PtRespNGenPF_wg_hist, PtRespNGenPFSig_wg_hist, PtRespNGenPFSig_wq_hist, PtRespNGenPFSig_wq_hist,
-                           gPtResp_hist, gPtRespNGenPF_w_hist, gPtRespNGenPFSig_w_hist,
-                           qPtResp_hist, qPtRespNGenPF_w_hist, qPtRespNGenPFSig_w_hist};
-vector<TH1D*> gausHists = {PtResp_gaus, PtRespNGenPF_wg_gaus, PtRespNGenPFSig_wg_gaus, PtRespNGenPFSig_wq_gaus, PtRespNGenPFSig_wq_gaus,
-                           gPtResp_gaus, gPtRespNGenPF_w_gaus, gPtRespNGenPFSig_w_gaus,
-                           qPtResp_gaus, qPtRespNGenPF_w_gaus, qPtRespNGenPFSig_w_gaus};
+   vector<TH2D*> respHists = {PtResp_hist, PtRespNGenPF_wg_hist, PtRespNGenPFSig_wg_hist, PtRespNGenPFSig_wq_hist, PtRespNGenPFSig_wq_hist,
+                              ptResp_hist.at(GLUON), ptRespNGenPF_w_hist.at(GLUON), ptRespNGenPFSig_w_hist.at(GLUON),
+                              ptResp_hist.at(QUARK), ptRespNGenPF_w_hist.at(QUARK), ptRespNGenPFSig_w_hist.at(QUARK)};
+   vector<TH1D*> gausHists = {PtResp_gaus, PtRespNGenPF_wg_gaus, PtRespNGenPFSig_wg_gaus, PtRespNGenPFSig_wq_gaus, PtRespNGenPFSig_wq_gaus,
+                              ptResp_gaus.at(GLUON), ptRespNGenPF_w_gaus.at(GLUON), ptRespNGenPFSig_w_gaus.at(GLUON),
+                              ptResp_gaus.at(QUARK), ptRespNGenPF_w_gaus.at(QUARK), ptRespNGenPFSig_w_gaus.at(QUARK)};
 
-for (int i = 0; i != respHists.size(); ++i) {
-   for (int xb = 1; xb != respHists.at(i)->GetNbinsX()+1; ++xb) {
-      respHists.at(i)->GetXaxis()->SetRange(xb, xb);
-      mean = respHists.at(i)->GetMean(2);
-      g1 = new TF1("g1","gaus",mean - cap, mean + cap);
-      py = respHists.at(i)->ProjectionY("_py", xb, xb);
-      py->Fit(g1, "Q", "");
-      gausHists.at(i)->SetBinContent(xb, g1->GetParameter("Mean"));
-      
-      if (respHists.at(i) == gPtResp_hist) {
-         gbounds->Fill(respHists.at(i)->GetXaxis()->GetBinLowEdge(xb), mean + cap);
-         gbounds->Fill(respHists.at(i)->GetXaxis()->GetBinLowEdge(xb), mean - cap);
-      }
-      if (respHists.at(i) == qPtResp_hist) {
-         qbounds->Fill(respHists.at(i)->GetXaxis()->GetBinLowEdge(xb), mean + cap);
-         qbounds->Fill(respHists.at(i)->GetXaxis()->GetBinLowEdge(xb), mean - cap);
+   for (int i = 0; i != respHists.size(); ++i) {
+      for (int xb = 1; xb != respHists.at(i)->GetNbinsX()+1; ++xb) {
+         respHists.at(i)->GetXaxis()->SetRange(xb, xb);
+         mean = respHists.at(i)->GetMean(2);
+         g1 = new TF1("g1","gaus",mean - cap, mean + cap);
+         py = respHists.at(i)->ProjectionY("_py", xb, xb);
+         py->Fit(g1, "Q", "");
+         gausHists.at(i)->SetBinContent(xb, g1->GetParameter("Mean"));
+         
+         if (respHists.at(i) == ptResp_hist.at(GLUON)) {
+            gbounds->Fill(respHists.at(i)->GetXaxis()->GetBinLowEdge(xb), mean + cap);
+            gbounds->Fill(respHists.at(i)->GetXaxis()->GetBinLowEdge(xb), mean - cap);
+         }
+         if (respHists.at(i) == ptResp_hist.at(QUARK)) {
+            qbounds->Fill(respHists.at(i)->GetXaxis()->GetBinLowEdge(xb), mean + cap);
+            qbounds->Fill(respHists.at(i)->GetXaxis()->GetBinLowEdge(xb), mean - cap);
+         }
       }
    }
-}
-/*
-PtResp_hist->SetAxisRange(fit_down, fit_up, "Y");
-PtRespNGenPF_wg_hist->SetAxisRange(fit_down, fit_up, "Y");
-PtRespNGenPFSig_wg_hist->SetAxisRange(fit_down, fit_up, "Y");
-PtRespNGenPF_wq_hist->SetAxisRange(fit_down, fit_up, "Y");
-PtRespNGenPFSig_wq_hist->SetAxisRange(fit_down, fit_up, "Y");
 
-gPtResp_hist->SetAxisRange(fit_down, fit_up, "Y");
-gPtRespNGenPF_w_hist->SetAxisRange(fit_down, fit_up, "Y");
-gPtRespNGenPFSig_w_hist->SetAxisRange(fit_down, fit_up, "Y");
+   CalculateProbs(ptResp_hist.at(GLUON), ptResp_hist.at(QUARK), ptResp_hist_norm.at(GLUON), ptResp_hist_norm.at(QUARK));
 
-qPtResp_hist->SetAxisRange(fit_down, fit_up, "Y");
-qPtRespNGenPF_w_hist->SetAxisRange(fit_down, fit_up, "Y");
-qPtRespNGenPFSig_w_hist->SetAxisRange(fit_down, fit_up, "Y");
+   const int nbins[3] = {5, 5, 5};
+   const double mins[3] = {0, 0, 0};
+   const double maxs[3] = {5, 5, 5};
 
-PtResp_hist->FitSlicesY();
-PtRespNGenPF_wg_hist->FitSlicesY();
-PtRespNGenPFSig_wg_hist->FitSlicesY();
-PtRespNGenPF_wq_hist->FitSlicesY();
-PtRespNGenPFSig_wq_hist->FitSlicesY();
+   THnD* testi = new THnD("testi", "", 3, nbins, mins, maxs);
+   THnD* testi_probs = new THnD("testi_probs", "", 3, nbins, mins, maxs);
 
-gPtResp_hist->FitSlicesY();
-gPtRespNGenPF_w_hist->FitSlicesY();
-gPtRespNGenPFSig_w_hist->FitSlicesY();
+   double x[3] = {0, 0, 0};
+   testi->Fill(x);
 
-qPtResp_hist->FitSlicesY();
-qPtRespNGenPF_w_hist->FitSlicesY();
-qPtRespNGenPFSig_w_hist->FitSlicesY();
+   int y[3] = {1, 1, 1};
+   cout << "a: " << testi->GetBinContent(y) << endl;
 
-*/
+   CalculateProbsNdim(testi, testi_probs);
 
-CalculateProbs(gPtResp_hist, qPtResp_hist, gPtResp_hist_norm, qPtResp_hist_norm);
 
-file->Write();
-file->Close();
+   file->Write();
+   file->Close();
 
-f->Close();
+   f->Close();
 }
 
 
@@ -381,7 +396,7 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
 
    TH2D* gNGenPF_probs = new TH2D("gluon_nGenPF_probs", "", nptbins, ptrange, npfbins, pfrange);
    TH2D* gGenJetMass_probs = new TH2D("gluon_genJetMass_probs", "", nptbins, ptrange, nMassBins, massrange);
-   TH2D* gJetGirth_probs = new TH2D("gluons_jetGirth_probs", "", nptbins, ptrange, 100, 0., 0.5);
+   TH2D* gJetGirth_probs = new TH2D("gluon_jetGirth_probs", "", nptbins, ptrange, 100, 0., 0.5);
    TH2D* gNGenPFSig = new TH2D("gluon_nGenPFSig", "", nptbins, ptrange, 300, -50, 250);
    TH2D* gNGenPFSig_probs = new TH2D("gluon_nGenPFSig_probs", "", nptbins, ptrange, 300, -50, 250);
    TProfile* gNGenPFSig_prof = new TProfile("gluon_nGenPFSig_prof", "", nptbins, ptrange);
@@ -399,7 +414,7 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
 
    TH2D* qNGenPF_probs = new TH2D("quark_nGenPF_probs", "", nptbins, ptrange, npfbins, pfrange);
    TH2D* qGenJetMass_probs = new TH2D("quark_genJetMass_probs", "", nptbins, ptrange, nMassBins, massrange);
-   TH2D* qJetGirth_probs = new TH2D("quarks_jetGirth_probs", "", nptbins, ptrange, 100, 0., 0.5);
+   TH2D* qJetGirth_probs = new TH2D("quark_jetGirth_probs", "", nptbins, ptrange, 100, 0., 0.5);
    TH2D* qNGenPFSig = new TH2D("quark_nGenPFSig", "", nptbins, ptrange, 300, -50, 250);
    TH2D* qNGenPFSig_probs = new TH2D("quark_nGenPFSig_probs", "", nptbins, ptrange, 300, -50, 250);
    TProfile* qNGenPFSig_prof = new TProfile("quark_nGenPFSig_prof", "", nptbins, ptrange);
@@ -461,7 +476,9 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
             if (rawWeighted) {
                usedWeightPt = jetRawPt;
             } 
-            else usedWeightPt = genJetPt;
+            else {
+               usedWeightPt = genJetPt;
+            }
          }
             for (int i = 0; i != nPF; ++i) {
                if (PF_fromPV[i] == 0) {
@@ -513,24 +530,25 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
                }
             }
             }
+         nPFsum = 0;
+         for (int i = 0; i != nPF; ++i) {
+               if (PF_dR[i] > dR_in && PF_dR[i] < dR_out && PF_fromPV[i] == 3) {
+                  ++nPFsum;
+               }
+         }
+         nUEPF_per_A = 2.75 * nPFsum / (M_PI * (dR_out*dR_out - dR_in*dR_in));
+         nUEPF_perA_hist->Fill(nUEPF_per_A);
+         nUEPF_perA_genJetPt_hist->Fill(usedWeightPt, nUEPF_per_A);
+         nUEPF_perA_nGenPF_hist->Fill(nGenJetPF, nUEPF_per_A);
+         nUEPF = jetArea*nUEPF_per_A;
+         nGenPFSig = nGenJetPF - nUEPF;
+
          if (isPhysG) {
             ++gluon_jets;
             gNGenPF->Fill(usedWeightPt, nGenJetPF);
             gGenJetMass->Fill(usedWeightPt, genJetMass);
             gJetGirth->Fill(usedWeightPt, jetGirth);
-            nPFsum = 0;
-            for (int i = 0; i != nPF; ++i) {
-                  if (PF_dR[i] > dR_in && PF_dR[i] < dR_out && PF_fromPV[i] == 3) {
-                     ++nPFsum;
-                  }
-            }
-            nUEPF_per_A = 2.75 * nPFsum / (M_PI * (dR_out*dR_out - dR_in*dR_in));
-            nUEPF_perA_hist->Fill(nUEPF_per_A);
-            nUEPF_perA_genJetPt_hist->Fill(usedWeightPt, nUEPF_per_A);
-            nUEPF_perA_nGenPF_hist->Fill(nGenJetPF, nUEPF_per_A);
             if (isPFSig_perEvent) {
-               nUEPF = jetArea*nUEPF_per_A;
-               nGenPFSig = nGenJetPF - nUEPF;
                gNGenPFSig->Fill(usedWeightPt, nGenPFSig);
             }
          }
@@ -540,27 +558,7 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
                qNGenPF->Fill(usedWeightPt, nGenJetPF);
                qGenJetMass->Fill(usedWeightPt, genJetMass);
                qJetGirth->Fill(usedWeightPt, jetGirth);
-               nPFsum = 0;
-               for (int i = 0; i != nPF; ++i) {
-                  if (PF_dR[i] > dR_in && PF_dR[i] < dR_out && PF_fromPV[i] == 3) {
-                     ++nPFsum;
-                  }
-                  int a = 0;
-                  while (a != 5) {
-                     if (a == PF_fromPV[i]) {
-                        
-                     }
-                     ++a;
-                  }
-
-               }
-               nUEPF_per_A = 2.75 * nPFsum / (M_PI * (dR_out*dR_out - dR_in*dR_in));
-               nUEPF_perA_hist->Fill(nUEPF_per_A);
-               nUEPF_perA_genJetPt_hist->Fill(usedWeightPt, nUEPF_per_A);
-               nUEPF_perA_nGenPF_hist->Fill(nGenJetPF, nUEPF_per_A);
                if (isPFSig_perEvent) {
-                  nUEPF = jetArea*nUEPF_per_A;
-                  nGenPFSig = nGenJetPF - nUEPF;
                   qNGenPFSig->Fill(usedWeightPt, nGenPFSig);
                }
             }
@@ -611,7 +609,9 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
                if (rawWeighted) {
                   usedWeightPt = jetRawPt;
                }
-               else usedWeightPt = genJetPt;
+               else {
+                  usedWeightPt = genJetPt;
+               }
             } 
 
             if (isPhysG) {
@@ -652,7 +652,7 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
    file->Close();
 }
 
-void GluonHistosFill::CalculateProbs(TH2D* gHist, TH2D* qHist, TH2D* gProbs, TH2D* qProbs) 
+void GluonHistosFill::CalculateProbs(TH2D* gHist, TH2D* qHist, TH2D* gProbs, TH2D* qProbs)
 {
    double gIntegral;
    double qIntegral;
@@ -669,6 +669,108 @@ void GluonHistosFill::CalculateProbs(TH2D* gHist, TH2D* qHist, TH2D* gProbs, TH2
             if (qIntegral > 0 && qHist != nullptr) {
                qProbs->SetBinContent(xb, yb, qHist->GetBinContent(xb, yb) / qIntegral);
             }
+         }
+      }
+   }
+}
+
+void GluonHistosFill::CalculateProbs3D(TH3D* gHist, TH3D* qHist, TH3D* gProbs, TH3D* qProbs)
+{
+   double gIntegral;
+   double qIntegral;
+   for (int xb = 1; xb != gHist->GetNbinsX()+1; ++xb) {
+      gIntegral = gHist->Integral(xb, xb, 0, -1, 0, -1);
+      if (qHist != nullptr) {
+         qIntegral = qHist->Integral(xb, xb, 0, -1, 0, -1);
+      }
+      if (gIntegral > 0 || (qIntegral > 0 && qProbs != nullptr)) {
+         for (int zb = 1; zb != gHist->GetNbinsZ()+1; ++zb) {
+            for (int yb = 1; yb != gHist->GetNbinsY()+1; ++yb) {
+               if (gIntegral > 0) {
+                  gProbs->SetBinContent(xb, yb, zb, gHist->GetBinContent(xb, yb) / gIntegral);
+               }
+               if (qIntegral > 0 && qHist != nullptr) {
+                  qProbs->SetBinContent(xb, yb, zb, qHist->GetBinContent(xb, yb) / qIntegral);
+               }
+            }
+         }
+      }
+   }
+}
+
+void  GluonHistosFill::CalculateProbsNdim(THnD* hist, THnD* probs)
+{
+   int d;
+   int D;
+   double integral;
+   vector<double> integrals;
+   int dims = hist->GetNdimensions();
+   int bin[dims];
+   int i;
+   bool start_over;
+
+   for (int i = 0; i != dims; ++i) {
+      bin[i] = 1;
+   }
+
+   for (int xb = 1; xb != hist->GetAxis(1)->GetNbins() +1; ++xb) {
+      bin[0] = xb;
+      for (int i = 1; i != dims; ++i) {
+         bin[i] = 1;
+      }
+      integral = 0;
+      D = 1;
+      d =1;
+      integral += hist->GetBinContent(bin);
+      cout << bin[0] << bin[1] << bin[2] << endl;
+      while(!(bin[dims-1] == hist->GetAxis(dims-1)->GetNbins() && bin[dims-2] == hist->GetAxis(dims-2)->GetNbins())) {
+         while (bin[d] == hist->GetAxis(d)->GetNbins()) {
+            ++d;
+            for (int i = 1; i != d; ++i) {
+               bin[i] = 1;
+            }
+            start_over = true;
+         }
+         if (start_over) {
+            ++bin[d];
+            d = 1;
+            start_over = false;
+         }
+         else {
+            ++bin[d];
+         }
+         integral += hist->GetBinContent(bin);
+         cout << bin[0] << bin[1] << bin[2] << endl;
+      }
+      integrals.push_back(integral);
+   }
+      for (int xb = 1; xb != hist->GetAxis(1)->GetNbins() +1; ++xb) {
+      bin[0] = xb;
+      for (int i = 1; i != dims; ++i) {
+         bin[i] = 1;
+      }
+      D = 1;
+      d =1;
+      integral = integrals.at(xb-1);
+      if (integral != 0) {
+         probs->SetBinContent(bin, hist->GetBinContent(bin)/integral);
+         while(!(bin[dims-1] == hist->GetAxis(dims-1)->GetNbins() && bin[dims-2] == hist->GetAxis(dims-2)->GetNbins())) {
+            while (bin[d] == hist->GetAxis(d)->GetNbins()) {
+               ++d;
+               for (int i = 1; i != d; ++i) {
+                  bin[i] = 1;
+               }
+               start_over = true;
+            }
+            if (start_over) {
+               ++bin[d];
+               d = 1;
+               start_over = false;
+            }
+            else {
+               ++bin[d];
+            }
+            probs->SetBinContent(bin, hist->GetBinContent(bin)/integral);
          }
       }
    }
