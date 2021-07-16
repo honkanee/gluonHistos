@@ -207,6 +207,8 @@ fChain->SetBranchStatus("jetRawPt", 1);
    double gprob_sig;
    double qprob_sig;
 
+   int type;
+
    Long64_t nentries = fChain->GetEntriesFast();
    Long64_t nbytes = 0, nb = 0;
    for (Long64_t jentry=0; jentry<nentries;jentry++) {
@@ -255,47 +257,50 @@ fChain->SetBranchStatus("jetRawPt", 1);
          gprob_sig = gHist2_sig->GetBinContent(gHist2_sig->FindBin(usedWeightPt, nGenPFSig));
          qprob_sig = qHist2_sig->GetBinContent(qHist2_sig->FindBin(usedWeightPt, nGenPFSig));
          if (isPhysG) {
-            ptResp.at(GLUON)->Fill(usedPlotPt, resp);
-            ptResp_hist.at(GLUON)->Fill(usedPlotPt, resp);
-            nGenPF.at(GLUON)->Fill(usedPlotPt, nGenJetPF);
-            perPtBin.at(GLUON)->Fill(usedPlotPt);
+            type = GLUON;
             if (gprob_sig > 0 && qprob_sig > 0) {
                w_sig = qprob_sig/gprob_sig;
-               ptRespNGenPFSig_w.at(GLUON)->Fill(usedPlotPt, resp, w_sig);
-               ptRespNGenPFSig_w_hist.at(GLUON)->Fill(usedPlotPt, resp, w_sig);
             }
+            else w_sig = 0;
             if (gprob > 0 && qprob > 0) {
                nGenJetPF_w = qprob/gprob;
-               ptRespNGenPF_w.at(GLUON)->Fill(usedPlotPt, resp, nGenJetPF_w);
-               ptRespNGenPF_w_hist.at(GLUON)->Fill(usedPlotPt, resp, nGenJetPF_w);
             }
+            else nGenJetPF_w = 0;
             if (gprob_jetGirth > 0 && qprob_jetGirth > 0) {
                jetGirth_w = qprob_jetGirth/gprob_jetGirth;
-               ptRespJetGirth_w.at(GLUON)->Fill(usedPlotPt, resp, jetGirth_w);
             }
+            else jetGirth_w = 0;
          }
          else {
             if (isPhysUDS) {
-               ptResp.at(QUARK)->Fill(usedPlotPt, resp);
-               ptResp_hist.at(QUARK)->Fill(usedPlotPt, resp);
-               nGenPF.at(QUARK)->Fill(usedPlotPt, nGenJetPF);
-               perPtBin.at(QUARK)->Fill(usedPlotPt);
+               type = QUARK;
                if (gprob_sig > 0 && qprob_sig > 0) {
                   w_sig = gprob_sig/qprob_sig;
-                  ptRespNGenPFSig_w.at(QUARK)->Fill(usedPlotPt, resp, w_sig);
-                  ptRespNGenPFSig_w_hist.at(QUARK)->Fill(usedPlotPt, resp, w_sig);
                }
+               else w_sig = 0;
                if (gprob > 0 && qprob > 0) {
                   nGenJetPF_w = gprob/qprob;
-                  ptRespNGenPF_w.at(QUARK)->Fill(usedPlotPt, resp, nGenJetPF_w);
-                  ptRespNGenPF_w_hist.at(QUARK)->Fill(usedPlotPt, resp, nGenJetPF_w);
                }
+               else nGenJetPF_w = 0;
                if (gprob_jetGirth > 0 && qprob_jetGirth > 0) {
                   jetGirth_w = gprob_jetGirth/qprob_jetGirth;
-                  ptRespJetGirth_w.at(QUARK)->Fill(usedPlotPt, resp, jetGirth_w);
-            }
+               }
+               else jetGirth_w = 0;
             }
          }
+         if (type == GLUON || type == QUARK) {
+            type = QUARK;
+            ptResp.at(type)->Fill(usedPlotPt, resp);
+            ptResp_hist.at(type)->Fill(usedPlotPt, resp);
+            nGenPF.at(type)->Fill(usedPlotPt, nGenJetPF);
+            perPtBin.at(type)->Fill(usedPlotPt);
+            ptRespNGenPFSig_w.at(type)->Fill(usedPlotPt, resp, w_sig);
+            ptRespNGenPFSig_w_hist.at(type)->Fill(usedPlotPt, resp, w_sig);
+            ptRespNGenPF_w.at(type)->Fill(usedPlotPt, resp, nGenJetPF_w);
+            ptRespNGenPF_w_hist.at(type)->Fill(usedPlotPt, resp, nGenJetPF_w);
+            ptRespJetGirth_w.at(type)->Fill(usedPlotPt, resp, jetGirth_w);
+         }
+         
          //All
          PtResp->Fill(usedPlotPt, resp);
          PtResp_hist->Fill(usedPlotPt, resp);
@@ -313,9 +318,8 @@ fChain->SetBranchStatus("jetRawPt", 1);
             PtRespNGenPFSig_wq->Fill(usedPlotPt, resp, gprob_sig/qprob_sig);
             PtRespNGenPFSig_wq_hist->Fill(usedPlotPt, resp, gprob_sig/qprob_sig);
          }
-
          PerPtBin->Fill(usedPlotPt);
-   }
+      }
    }
 
    double fit_up = 1.2;
@@ -389,47 +393,46 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
    TFile* file = new TFile("./weightHistos.root", "recreate");
    #endif
 
-   //Gluon
-   TH2D* gNGenPF = new TH2D("gluon_nGenPF_hist", "", nptbins, ptrange, npfbins, pfrange);
-   TH2D* gGenJetMass = new TH2D("gluon_genJetMass", "", nptbins, ptrange, nMassBins, massrange);
-   TH2D* gJetGirth = new TH2D("gluon_jetGirth", "", nptbins, ptrange, 100, 0., 0.5);
+   vector<TH2D*> nGenPF;
+   vector<TH2D*> genJetMass_histos;
+   vector<TH2D*> jetGirth_histos;
 
-   TH2D* gNGenPF_probs = new TH2D("gluon_nGenPF_probs", "", nptbins, ptrange, npfbins, pfrange);
-   TH2D* gGenJetMass_probs = new TH2D("gluon_genJetMass_probs", "", nptbins, ptrange, nMassBins, massrange);
-   TH2D* gJetGirth_probs = new TH2D("gluon_jetGirth_probs", "", nptbins, ptrange, 100, 0., 0.5);
-   TH2D* gNGenPFSig = new TH2D("gluon_nGenPFSig", "", nptbins, ptrange, 300, -50, 250);
-   TH2D* gNGenPFSig_probs = new TH2D("gluon_nGenPFSig_probs", "", nptbins, ptrange, 300, -50, 250);
-   TProfile* gNGenPFSig_prof = new TProfile("gluon_nGenPFSig_prof", "", nptbins, ptrange);
+   vector<TH2D*> nGenPF_probs;
+   vector<TH2D*> genJetMass_probs;
+   vector<TH2D*> jetGirth_probs;
+   vector<TH2D*> nGenPFSig;
+   vector<TH2D*> nGenPFSig_probs;
+   vector<TProfile*> nGenPFSig_prof;
 
-   TH1D* gdR_nPF_fromPV0 = new TH1D("gluon_dR_nPF_fromPV0", "", 100, 0, 1.5);
-   TH1D* gdR_nPF_fromPV1 = new TH1D("gluon_dR_nPF_fromPV1", "", 100, 0, 1.5);
-   TH1D* gdR_nPF_fromPV2 = new TH1D("gluon_dR_nPF_fromPV2", "", 100, 0, 1.5);
-   TH1D* gdR_nPF_fromPV3 = new TH1D("gluon_dR_nPF_fromPV3", "", 100, 0, 1.5);
+   vector<TH1D*> dR_nPF_fromPV0;
+   vector<TH1D*> dR_nPF_fromPV1;
+   vector<TH1D*> dR_nPF_fromPV2;
+   vector<TH1D*> dR_nPF_fromPV3;
 
+   for (string str : {"gluon_", "quark_"}) {
+      nGenPF.push_back(new TH2D(char_add(str, "nGenPF_hist"), "", nptbins, ptrange, npfbins, pfrange));
+      genJetMass_histos.push_back(new TH2D(char_add(str, "genJetMass"), "", nptbins, ptrange, nMassBins, massrange));
+      jetGirth_histos.push_back(new TH2D(char_add(str, "jetGirth"), "", nptbins, ptrange, 100, 0., 0.5));
 
-   //Quarks
-   TH2D* qNGenPF = new TH2D("quark_nGenPF_hist", "", nptbins, ptrange, npfbins, pfrange);
-   TH2D* qGenJetMass = new TH2D("quark_genJetMass", "", nptbins, ptrange, nMassBins, pfrange);
-   TH2D* qJetGirth = new TH2D("quark_jetGirth", "", nptbins, ptrange, 100, 0., 0.5);
+      nGenPF_probs.push_back(new TH2D(char_add(str, "nGenPF_probs"), "", nptbins, ptrange, npfbins, pfrange));
+      genJetMass_probs.push_back(new TH2D(char_add(str, "genJetMass_probs"), "", nptbins, ptrange, nMassBins, massrange));
+      jetGirth_probs.push_back(new TH2D(char_add(str, "jetGirth_probs"), "", nptbins, ptrange, 100, 0., 0.5));
+      nGenPFSig.push_back(new TH2D(char_add(str, "nGenPFSig"), "", nptbins, ptrange, 300, -50, 250));
+      nGenPFSig_probs.push_back(new TH2D(char_add(str, "nGenPFSig_probs"), "", nptbins, ptrange, 300, -50, 250));
+      nGenPFSig_prof.push_back(new TProfile(char_add(str, "nGenPFSig_prof"), "", nptbins, ptrange));
 
-   TH2D* qNGenPF_probs = new TH2D("quark_nGenPF_probs", "", nptbins, ptrange, npfbins, pfrange);
-   TH2D* qGenJetMass_probs = new TH2D("quark_genJetMass_probs", "", nptbins, ptrange, nMassBins, massrange);
-   TH2D* qJetGirth_probs = new TH2D("quark_jetGirth_probs", "", nptbins, ptrange, 100, 0., 0.5);
-   TH2D* qNGenPFSig = new TH2D("quark_nGenPFSig", "", nptbins, ptrange, 300, -50, 250);
-   TH2D* qNGenPFSig_probs = new TH2D("quark_nGenPFSig_probs", "", nptbins, ptrange, 300, -50, 250);
-   TProfile* qNGenPFSig_prof = new TProfile("quark_nGenPFSig_prof", "", nptbins, ptrange);
-
-   TH1D* qdR_nPF_fromPV0 = new TH1D("quark_dR_nPF_fromPV0", "", 100, 0, 1.5);
-   TH1D* qdR_nPF_fromPV1 = new TH1D("quark_dR_nPF_fromPV1", "", 100, 0, 1.5);
-   TH1D* qdR_nPF_fromPV2 = new TH1D("quark_dR_nPF_fromPV2", "", 100, 0, 1.5);
-   TH1D* qdR_nPF_fromPV3 = new TH1D("quark_dR_nPF_fromPV3", "", 100, 0, 1.5);
+      dR_nPF_fromPV0.push_back(new TH1D(char_add(str, "dR_nPF_fromPV0"), "", 100, 0, 1.5));
+      dR_nPF_fromPV1.push_back(new TH1D(char_add(str, "dR_nPF_fromPV1"), "", 100, 0, 1.5));
+      dR_nPF_fromPV2.push_back(new TH1D(char_add(str, "dR_nPF_fromPV2"), "", 100, 0, 1.5));
+      dR_nPF_fromPV3.push_back(new TH1D(char_add(str, "dR_nPF_fromPV3"), "", 100, 0, 1.5));
+   }
 
    int nPFsum;
    double nUEPF_per_A;
    double nUEPF;
    double dR_in = 0.8;
    double dR_out = 1.0;
-   double nGenPFSig;
+   double nGenPFSig_value;
 
    TH1D* nUEPF_perA_hist = new TH1D("UE_nPF_perA", "", int(80./2.75)+3, 0, int(80./2.75)*2.75);
    TH2D* nUEPF_perA_nGenPF_hist = new TH2D("nUEPF_perA_nGenPF_hist", "", npfbins, pfrange, int(80./2.75)+3, 0, int(80./2.75)*2.75);
@@ -438,26 +441,20 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
    TH2D* nUEPF_perA_genJetPt_probs = new TH2D("nUEPF_perA_genJetPt_probs", "", nptbins, ptrange, int(80./2.75)+3, 0, int(80./2.75)*2.75);
    TProfile* nUEPF_nGenPF = new TProfile("nUEPF_nGenPF", "", npfbins, pfrange);
 
-   TH1D* dR_nPF_fromPV0 = new TH1D("dR_nPF_fromPV0", "", 100, 0, 1.5);
-   TH1D* dR_nPF_fromPV1 = new TH1D("dR_nPF_fromPV1", "", 100, 0, 1.5);
-   TH1D* dR_nPF_fromPV2 = new TH1D("dR_nPF_fromPV2", "", 100, 0, 1.5);
-   TH1D* dR_nPF_fromPV3 = new TH1D("dR_nPF_fromPV3", "", 100, 0, 1.5);
+   TH1D* dR_nPF_fromPV0_all = new TH1D("dR_nPF_fromPV0", "", 100, 0, 1.5);
+   TH1D* dR_nPF_fromPV1_all = new TH1D("dR_nPF_fromPV1", "", 100, 0, 1.5);
+   TH1D* dR_nPF_fromPV2_all = new TH1D("dR_nPF_fromPV2", "", 100, 0, 1.5);
+   TH1D* dR_nPF_fromPV3_all = new TH1D("dR_nPF_fromPV3", "", 100, 0, 1.5);
 
    int all_events = 0;
-   int all_PV0 = 0;
-   int all_PV1 = 0;
-   int all_PV2 = 0;
-   int all_PV3 = 0;
    int gluon_jets = 0;
-   int gluon_PV0 = 0;
-   int gluon_PV1 = 0;
-   int gluon_PV2 = 0;
-   int gluon_PV3 = 0;
    int quark_jets = 0;
-   int quark_PV0 = 0;
-   int quark_PV1 = 0;
-   int quark_PV2 = 0;
-   int quark_PV3 = 0;
+   vector<int> PV0_jets = {0, 0, 0};
+   vector<int> PV1_jets = {0, 0, 0};
+   vector<int> PV2_jets = {0, 0, 0};
+   vector<int> PV3_jets = {0, 0, 0};
+
+   int type;
 
    Long64_t nentries = fChain->GetEntriesFast();
    Long64_t nbytes = 0, nb = 0;
@@ -468,7 +465,18 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
       // if (Cut(ientry) < 0) continue;
 
       if (fabs(jetEta)<1.3 && jetPtOrder<2 && fpclassify(genJetPt) == FP_NORMAL && genJetPt > 0) {
+
          ++all_events;
+         if (isPhysG) {
+            type = GLUON;
+            ++gluon_jets;
+         }
+         else {
+            if (isPhysUDS) {
+               type = QUARK;
+               ++quark_jets;
+            }
+         }
          if (recoWeighted) {
             usedWeightPt = jetPt;
          }
@@ -480,56 +488,40 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
                usedWeightPt = genJetPt;
             }
          }
-            for (int i = 0; i != nPF; ++i) {
-               if (PF_fromPV[i] == 0) {
-                  ++all_PV0;
-                  dR_nPF_fromPV0->Fill(PF_dR[i]);
-               if (isPhysG) {
-                  ++gluon_PV0;
-                  gdR_nPF_fromPV0->Fill(PF_dR[i]);
-               }
-               if (isPhysUDS) {
-                  ++quark_PV0;
-                  qdR_nPF_fromPV0->Fill(PF_dR[i]);
+         for (int i = 0; i != nPF; ++i) {
+            if (PF_fromPV[i] == 0) {
+               ++PV0_jets.at(ALL);
+               dR_nPF_fromPV0_all->Fill(PF_dR[i]);
+               if (isPhysG || isPhysUDS) {
+                  ++PV0_jets.at(type);
+                  dR_nPF_fromPV0.at(type)->Fill(PF_dR[i]);
                }
             }
             if (PF_fromPV[i] == 1) {
-               ++all_PV1;
-               dR_nPF_fromPV1->Fill(PF_dR[i]);
-               if (isPhysG) {
-                  ++gluon_PV1;
-                  gdR_nPF_fromPV1->Fill(PF_dR[i]);
-               }
-               if (isPhysUDS) {
-                  ++quark_PV1;
-                  qdR_nPF_fromPV1->Fill(PF_dR[i]);
+               ++PV1_jets.at(ALL);
+               dR_nPF_fromPV1_all->Fill(PF_dR[i]);
+               if (isPhysG|| isPhysUDS) {
+                  ++PV1_jets.at(type);
+                  dR_nPF_fromPV1.at(type)->Fill(PF_dR[i]);
                }
             }
             if (PF_fromPV[i] == 2) {
-               ++all_PV2;
-               dR_nPF_fromPV2->Fill(PF_dR[i]);
-               if (isPhysG) {
-                  ++gluon_PV2;
-                  gdR_nPF_fromPV2->Fill(PF_dR[i]);
-               }
-               if (isPhysUDS) {
-                  ++quark_PV2;
-                  qdR_nPF_fromPV2->Fill(PF_dR[i]);
+               ++PV2_jets.at(ALL);
+               dR_nPF_fromPV2_all->Fill(PF_dR[i]);
+               if (isPhysG || isPhysUDS) {
+                  ++PV2_jets.at(type);
+                  dR_nPF_fromPV2.at(type)->Fill(PF_dR[i]);
                }
             }
             if (PF_fromPV[i] == 3) {
-               ++all_PV3;
-               dR_nPF_fromPV3->Fill(PF_dR[i]);
-               if (isPhysG) {
-                  ++gluon_PV3;
-                  gdR_nPF_fromPV3->Fill(PF_dR[i]);
-               }
-               if (isPhysUDS) {
-                  ++quark_PV3;
-                  qdR_nPF_fromPV3->Fill(PF_dR[i]);
+               ++PV3_jets.at(ALL);
+               dR_nPF_fromPV3_all->Fill(PF_dR[i]);
+               if (isPhysUDS || isPhysG) {
+                  ++PV3_jets.at(type);
+                  dR_nPF_fromPV3.at(type)->Fill(PF_dR[i]);
                }
             }
-            }
+         }
          nPFsum = 0;
          for (int i = 0; i != nPF; ++i) {
                if (PF_dR[i] > dR_in && PF_dR[i] < dR_out && PF_fromPV[i] == 3) {
@@ -541,26 +533,14 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
          nUEPF_perA_genJetPt_hist->Fill(usedWeightPt, nUEPF_per_A);
          nUEPF_perA_nGenPF_hist->Fill(nGenJetPF, nUEPF_per_A);
          nUEPF = jetArea*nUEPF_per_A;
-         nGenPFSig = nGenJetPF - nUEPF;
+         nGenPFSig_value = nGenJetPF - nUEPF;
 
-         if (isPhysG) {
-            ++gluon_jets;
-            gNGenPF->Fill(usedWeightPt, nGenJetPF);
-            gGenJetMass->Fill(usedWeightPt, genJetMass);
-            gJetGirth->Fill(usedWeightPt, jetGirth);
+         if (type == GLUON || type == QUARK) {
+            nGenPF.at(type)->Fill(usedWeightPt, nGenJetPF);
+            genJetMass_histos.at(type)->Fill(usedWeightPt, genJetMass);
+            jetGirth_histos.at(type)->Fill(usedWeightPt, jetGirth);
             if (isPFSig_perEvent) {
-               gNGenPFSig->Fill(usedWeightPt, nGenPFSig);
-            }
-         }
-         else {
-            if (isPhysUDS) {
-               ++quark_jets;
-               qNGenPF->Fill(usedWeightPt, nGenJetPF);
-               qGenJetMass->Fill(usedWeightPt, genJetMass);
-               qJetGirth->Fill(usedWeightPt, jetGirth);
-               if (isPFSig_perEvent) {
-                  qNGenPFSig->Fill(usedWeightPt, nGenPFSig);
-               }
+               nGenPFSig.at(type)->Fill(usedWeightPt, nGenPFSig_value);
             }
          }
       }
@@ -573,9 +553,9 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
    double up;
    double normalized;
 
-   vector<TH1D*> fromPV_histos = {dR_nPF_fromPV0, dR_nPF_fromPV1, dR_nPF_fromPV2, dR_nPF_fromPV3, 
-                     gdR_nPF_fromPV0, gdR_nPF_fromPV1, gdR_nPF_fromPV2, gdR_nPF_fromPV3,
-                     qdR_nPF_fromPV0, qdR_nPF_fromPV1, qdR_nPF_fromPV2, qdR_nPF_fromPV3};
+   vector<TH1D*> fromPV_histos = {dR_nPF_fromPV0_all, dR_nPF_fromPV1_all, dR_nPF_fromPV2_all, dR_nPF_fromPV3_all, 
+                     dR_nPF_fromPV0.at(GLUON), dR_nPF_fromPV1.at(GLUON), dR_nPF_fromPV2.at(GLUON), dR_nPF_fromPV3.at(GLUON),
+                     dR_nPF_fromPV0.at(QUARK), dR_nPF_fromPV1.at(QUARK), dR_nPF_fromPV2.at(QUARK), dR_nPF_fromPV3.at(QUARK)};
    vector<int> counts = {all_events, all_events, all_events, all_events, gluon_jets, gluon_jets, gluon_jets, gluon_jets, quark_jets, quark_jets, quark_jets, quark_jets};
    TH1D* hist;
    for (int i = 0; i != fromPV_histos.size(); ++i) {
@@ -615,36 +595,34 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
             } 
 
             if (isPhysG) {
-               nUEPF = jetArea*nUEPF_per_A;
-               nGenPFSig = nGenJetPF - nUEPF;
-               gNGenPFSig->Fill(usedWeightPt, nGenPFSig);
-               gNGenPFSig_prof->Fill(usedWeightPt, nGenPFSig);
+               type = GLUON;
             }
-            else {
-               if (isPhysUDS) {
-                  nUEPF = jetArea*nUEPF_per_A;
-                  nGenPFSig = nGenJetPF - nUEPF;
-                  qNGenPFSig->Fill(usedWeightPt, nGenPFSig);
-                  qNGenPFSig_prof->Fill(usedWeightPt, nGenPFSig);
+            if (isPhysUDS) {
+                  type = QUARK;
                }
+            if (type == GLUON || type == QUARK) {
+               nUEPF = jetArea*nUEPF_per_A;
+               nGenPFSig_value = nGenJetPF - nUEPF;
+               nGenPFSig.at(type)->Fill(usedWeightPt, nGenPFSig_value);
+               nGenPFSig_prof.at(type)->Fill(usedWeightPt, nGenPFSig_value);
             }
          }
       }
    }
 
-   gNGenPF->Smooth(1, "k5b");
-   gNGenPFSig->Smooth(1, "k5b");
-   qNGenPF->Smooth(1, "k5b");
-   qNGenPFSig->Smooth(1, "k5b");
+   nGenPF.at(GLUON)->Smooth(1, "k5b");
+   nGenPFSig.at(GLUON)->Smooth(1, "k5b");
+   nGenPF.at(QUARK)->Smooth(1, "k5b");
+   nGenPFSig.at(QUARK)->Smooth(1, "k5b");
 
    CalculateProbs(nUEPF_perA_genJetPt_hist, nullptr, nUEPF_perA_genJetPt_probs, nullptr);
    CalculateProbs(nUEPF_perA_nGenPF_hist, nullptr, nUEPF_perA_nGenPF_probs, nullptr);
 
-   CalculateProbs(gNGenPF, qNGenPF, gNGenPF_probs, qNGenPF_probs);
-   CalculateProbs(gNGenPFSig, qNGenPFSig, gNGenPFSig_probs, qNGenPFSig_probs);
+   CalculateProbs(nGenPF.at(GLUON), nGenPF.at(QUARK), nGenPF_probs.at(GLUON), nGenPF_probs.at(QUARK));
+   CalculateProbs(nGenPFSig.at(GLUON), nGenPFSig.at(QUARK), nGenPFSig_probs.at(GLUON), nGenPFSig_probs.at(QUARK));
 
-   CalculateProbs(gGenJetMass, qGenJetMass, gGenJetMass_probs, qGenJetMass_probs);
-   CalculateProbs(gJetGirth, qJetGirth, gJetGirth_probs, qJetGirth_probs);
+   CalculateProbs(genJetMass_histos.at(GLUON), genJetMass_histos.at(QUARK), genJetMass_probs.at(GLUON), genJetMass_probs.at(QUARK));
+   CalculateProbs(jetGirth_histos.at(GLUON), jetGirth_histos.at(QUARK), jetGirth_probs.at(GLUON), jetGirth_probs.at(QUARK));
 
    cout << "probability calculated" << endl;
 
