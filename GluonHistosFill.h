@@ -8,7 +8,7 @@
 #define GluonHistosFill_h
 
 //#define SINGLE_TREE
-//#define RECREATE_WEIGHTS
+#define RECREATE_WEIGHTS
 
 #include <iostream>
 
@@ -24,7 +24,6 @@ using namespace std;
 
 const int N_PF = 1000;
 const int N_GenJetPF = 500;
-
 
 class GluonHistosFill {
 public :
@@ -190,6 +189,7 @@ public :
    void             CalculateProbs(TH2D* gHist, TH2D* qHist, TH2D* gProbs, TH2D* qProbs);
    void             CalculateProbs3D(TH3D* gHist, TH3D* qHist, TH3D* gProbs, TH3D* qProbs);
    void             CalculateProbsNdim(THnD* hist, THnD* probs);
+   vector<double>   CalculateAngularity(vector<double> kappa, vector<double> beta);
 };
 
 #endif

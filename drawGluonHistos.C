@@ -42,6 +42,10 @@ void drawGluonHistos() {
     vector<TProfile*> nGenPFSig_prof(3);
     vector<TProfile*> pt_resp_jetGirth_w(3);
     vector<TProfile*> pt_resp_genJetMass_w(3);
+    vector<TProfile*> pt_resp_genJetLHA_w(3);
+    vector<TProfile*> pt_resp_genJetWidth_w(3);
+    vector<TProfile*> pt_resp_genJetThrust_w(3);
+    vector<TProfile*> pt_resp_genJetMultiplicity_w(3);
 
     vector<TH1D*> pt_resp_gaus(3);
     vector<TH1D*> pt_resp_nGenJetPF_w_gaus(3);
@@ -52,6 +56,12 @@ void drawGluonHistos() {
     vector<TH2D*> nGenPF_probs(3);
     vector<TH2D*> nGenPFSig_probs(3);
     vector<TH2D*> genJetMass(3);
+    vector<TH2D*> jetGirth_probs(3);
+    vector<TH2D*> genJetMass_probs(3);
+    vector<TH2D*> genJetLHA_probs(3);
+    vector<TH2D*> genJetWidth_probs(3);
+    vector<TH2D*> genJetThrust_probs(3);
+    vector<TH2D*> genJetMultiplicity_probs(3);
 
     vector<TH1D*> dR_nPF_fromPV0(3);
     vector<TH1D*> dR_nPF_fromPV1(3);
@@ -71,6 +81,10 @@ void drawGluonHistos() {
     f->GetObject(char_add(str, "pt_resp_jetGirth_w"), pt_resp_jetGirth_w.at(type));
     f2->GetObject(char_add(str, "nGenPFSig_prof"), nGenPFSig_prof.at(type));
     f->GetObject(char_add(str, "pt_resp_genJetMass_w"), pt_resp_genJetMass_w.at(type));
+    f->GetObject(char_add(str, "pt_resp_genJetLHA_w"), pt_resp_genJetLHA_w.at(type));
+    f->GetObject(char_add(str, "pt_resp_genJetWidth_w"), pt_resp_genJetWidth_w.at(type));
+    f->GetObject(char_add(str, "pt_resp_genJetThrust_w"), pt_resp_genJetThrust_w.at(type));
+    f->GetObject(char_add(str, "pt_resp_genJetMultiplicity_w"), pt_resp_genJetMultiplicity_w.at(type));
 
     f->GetObject(char_add(str, "pt_resp_gaus"), pt_resp_gaus.at(type));
     f->GetObject(char_add(str, "pt_resp_nGenJetPF_w_gaus"), pt_resp_nGenJetPF_w_gaus.at(type));
@@ -80,6 +94,12 @@ void drawGluonHistos() {
 
     f2->GetObject(char_add(str, "nGenPF_probs"), nGenPF_probs.at(type));
     f2->GetObject(char_add(str, "nGenPFSig_probs"), nGenPFSig_probs.at(type));
+    f2->GetObject(char_add(str, "jetGirth_probs"), jetGirth_probs.at(type));
+    f2->GetObject(char_add(str, "genJetMass_probs"), genJetMass_probs.at(type));
+    f2->GetObject(char_add(str, "genJet_LHA_probs"), genJetLHA_probs.at(type));
+    f2->GetObject(char_add(str, "genJet_width_probs"), genJetWidth_probs.at(type));
+    f2->GetObject(char_add(str, "genJet_thrust_probs"), genJetThrust_probs.at(type));
+    f2->GetObject(char_add(str, "genJet_multiplicity_probs"), genJetMultiplicity_probs.at(type));
 
     f2->GetObject(char_add(str, "dR_nPF_fromPV0"), dR_nPF_fromPV0.at(type));
     f2->GetObject(char_add(str, "dR_nPF_fromPV1"), dR_nPF_fromPV1.at(type));
@@ -441,28 +461,62 @@ void drawGluonHistos() {
     leg5->AddEntry(dR_nPF_fromPV3, "PF_{fromPV} = 3", "PLE");
     */
 
+    vector<vector<TH2D*>> probs_histos = {genJetMass_probs, jetGirth_probs, genJetLHA_probs, genJetWidth_probs, genJetThrust_probs, genJetMultiplicity_probs};
+    vector<char*> y_label = {"Mass", "Girth", "LHA", "Width", "Thrust", "Multiplicity"};
+    for (int i = 0; i != probs_histos.size(); ++i) {
+        TCanvas* c4 = new TCanvas(char_add("c", to_string(30 + i)), char_add("c", to_string(30 + i)),1400,700);
+        c4->Divide(2,1);
+
+        c4->cd(1);
+        probs_histos.at(i).at(GLUON)->SetAxisRange(30, 3500, "X");
+        gPad->SetLogx();
+        probs_histos.at(i).at(GLUON)->GetXaxis()->SetTitle("gen p_{T} (GeV)");
+        probs_histos.at(i).at(GLUON)->GetYaxis()->SetTitle(y_label.at(i));
+        probs_histos.at(i).at(GLUON)->GetZaxis()->SetTitle("prob");
+        probs_histos.at(i).at(GLUON)->SetAxisRange(0,0.1,"Z");
+        probs_histos.at(i).at(GLUON)->Draw("colz");
+
+        gt->Draw();
+
+        c4->cd(2);
+        probs_histos.at(i).at(QUARK)->SetAxisRange(30, 3500,"X");
+        gPad->SetLogx();
+        probs_histos.at(i).at(QUARK)->GetXaxis()->SetTitle("gen p_{T} (GeV)");
+        probs_histos.at(i).at(QUARK)->GetYaxis()->SetTitle(y_label.at(i));
+        probs_histos.at(i).at(QUARK)->GetZaxis()->SetTitle("prob");
+        probs_histos.at(i).at(QUARK)->SetAxisRange(0,0.1, "Z");
+        probs_histos.at(i).at(QUARK)->Draw("colz");
+    }
+
     //Pt response jetGirth weighted
-    vector<TProfile*> plotted_pt_prof = pt_resp_genJetMass_w;
-    TCanvas* c16 = tdrCanvas("c16", h, 4, 11, kSquare);
-    h->GetXaxis()->SetMoreLogLabels();
-    gPad->SetLogx();
+    vector<string> legend_str = {" mass", " girth", " LHA", " width", " thrust", " multiplicity"};
+    vector<vector<TProfile*>> profiles = {pt_resp_genJetMass_w, pt_resp_jetGirth_w, pt_resp_genJetLHA_w, pt_resp_genJetWidth_w, pt_resp_genJetThrust_w, pt_resp_genJetMultiplicity_w};
+    vector<TProfile*> plotted_pt_prof;
+    for (int i = 0; i != profiles.size(); ++i) {
+        plotted_pt_prof = profiles.at(i);
 
-    tdrDraw(pt_resp.at(ALL), "P", kOpenCircle, kBlack);
-    tdrDraw(pt_resp.at(GLUON), "", kFullCircle, kRed);
-    tdrDraw(plotted_pt_prof.at(GLUON), "", kFullTriangleUp, kRed);
-    tdrDraw(pt_resp.at(QUARK), "", kFullCircle, kBlue);
-    tdrDraw(plotted_pt_prof.at(QUARK), "", kFullTriangleUp, kBlue);
-    pt_resp.at(GLUON)->SetMarkerSize(1.2);
-    plotted_pt_prof.at(GLUON)->SetMarkerSize(1.2);
-    pt_resp.at(QUARK)->SetMarkerSize(1.2);
-    plotted_pt_prof.at(QUARK)->SetMarkerSize(1.2);
+        h->SetAxisRange(0.95, 1.1, "X");
+        TCanvas* c16 = tdrCanvas(char_add("c", to_string(16 + i)), h, 4, 11, kSquare);
+        h->GetXaxis()->SetMoreLogLabels();
+        gPad->SetLogx();
 
-    TLegend *leg5 = tdrLeg(0.37,0.90-6*0.045,0.57,0.90);
-    leg5->AddEntry(pt_resp.at(ALL), "All", "PLE");
-    leg5->AddEntry(pt_resp.at(GLUON), "Gluons", "PLE");
-    leg5->AddEntry(pt_resp.at(QUARK), "Quarks", "PLE");
-    leg5->AddEntry(plotted_pt_prof.at(GLUON), "Gluons weighted", "PLE");
-    leg5->AddEntry(plotted_pt_prof.at(QUARK), "Quarks weighted", "PLE");
+        tdrDraw(pt_resp.at(ALL), "P", kOpenCircle, kBlack);
+        tdrDraw(pt_resp.at(GLUON), "", kFullCircle, kRed);
+        tdrDraw(plotted_pt_prof.at(GLUON), "", kFullTriangleUp, kRed);
+        tdrDraw(pt_resp.at(QUARK), "", kFullCircle, kBlue);
+        tdrDraw(plotted_pt_prof.at(QUARK), "", kFullTriangleUp, kBlue);
+        pt_resp.at(GLUON)->SetMarkerSize(1.2);
+        plotted_pt_prof.at(GLUON)->SetMarkerSize(1.2);
+        pt_resp.at(QUARK)->SetMarkerSize(1.2);
+        plotted_pt_prof.at(QUARK)->SetMarkerSize(1.2);
 
-    tex->DrawLatex(0.15, 0.95,"|#eta|<1.3");
+        TLegend *leg5 = tdrLeg(0.37,0.90-6*0.045,0.57,0.90);
+        leg5->AddEntry(pt_resp.at(ALL), "All", "PLE");
+        leg5->AddEntry(pt_resp.at(GLUON), "Gluons", "PLE");
+        leg5->AddEntry(pt_resp.at(QUARK), "Quarks", "PLE");
+        leg5->AddEntry(plotted_pt_prof.at(GLUON), char_add("Gluons weighted", legend_str.at(i)), "PLE");
+        leg5->AddEntry(plotted_pt_prof.at(QUARK), char_add("Quarks weighted", legend_str.at(i)), "PLE");
+
+        tex->DrawLatex(0.15, 0.95,"|#eta|<1.3");
+    }
 }
