@@ -29,7 +29,7 @@ class GluonHistosFill {
 public :
 
    bool recoWeighted = false;
-   bool rawWeighted = false;
+   bool rawWeighted = true;
    bool recoPlotted = false;
    bool isPFSig_perEvent = false;
    double usedWeightPt;

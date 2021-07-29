@@ -18,7 +18,7 @@ char* char_add(string a, string b) {
    return cstr;
 }
 
-enum {GLUON, QUARK, ALL};
+enum {GLUON, QUARK, ALL, ELSE};
 
 void GluonHistosFill::Loop()
 {
@@ -62,6 +62,12 @@ fChain->SetBranchStatus("genJetPF_dR", 1);
       massrange[ i ] = i;
    }
 
+   const int NWIDTHBINS = 100;
+   double widthrange[NWIDTHBINS +1];
+   for (int i = 0; i < NWIDTHBINS+1; ++i) {
+      widthrange[i] = i/100;
+   }
+
    #ifdef RECREATE_WEIGHTS
    FillWeightHistos(NBINS, ptrange, NPFBINS, pfrange, NMASSBINS, massrange);
    #endif
@@ -87,6 +93,8 @@ fChain->SetBranchStatus("genJetPF_dR", 1);
    vector<TH2D*> genJetThrust_probs(2);
    vector<TH2D*> genJetMultiplicity_probs(2);
 
+   vector<TH3D*> nGenJetPF_genJetWidth_probs(2);
+
    f->GetObject("gluon_nGenPF_probs", gHist2);
    f->GetObject("quark_nGenPF_probs", qHist2);
    f->GetObject("UE_nPF_perA", nUEPF_perA_hist);
@@ -104,7 +112,9 @@ fChain->SetBranchStatus("genJetPF_dR", 1);
    f->GetObject("quark_genJet_thrust_probs", genJetThrust_probs.at(QUARK));
    f->GetObject("gluon_genJet_multiplicity_probs", genJetMultiplicity_probs.at(GLUON));
    f->GetObject("quark_genJet_multiplicity_probs", genJetMultiplicity_probs.at(QUARK));
-
+   f->GetObject("gluon_genJet_multiplicity_probs", genJetMultiplicity_probs.at(GLUON));
+   f->GetObject("gluon_nGenJetPF_genJetWidth_probs", nGenJetPF_genJetWidth_probs.at(GLUON));
+   f->GetObject("quark_nGenJetPF_genJetWidth_probs", nGenJetPF_genJetWidth_probs.at(QUARK));
 
    #ifdef SINGLE_TREE
    TFile* file = new TFile("outputGluonHistos_single.root", "recreate");
@@ -124,6 +134,7 @@ fChain->SetBranchStatus("genJetPF_dR", 1);
    vector<TProfile*> ptRespGenJetWidth_w;
    vector<TProfile*> ptRespGenJetThrust_w;
    vector<TProfile*> ptRespGenJetMultiplicity_w;
+   vector<TProfile*> ptRespNgenJetPF_genJetWidth_w;
 
    vector<TH2D*> nGenPF_w_hist;
    vector<TH1D*> perPtBin;
@@ -149,6 +160,7 @@ fChain->SetBranchStatus("genJetPF_dR", 1);
       ptRespGenJetWidth_w.push_back(   new TProfile(char_add(str, "pt_resp_genJetWidth_w"), "", NBINS, ptrange));
       ptRespGenJetThrust_w.push_back(  new TProfile(char_add(str, "pt_resp_genJetThrust_w"), "", NBINS, ptrange));
       ptRespGenJetMultiplicity_w.push_back(new TProfile(char_add(str, "pt_resp_genJetMultiplicity_w"), "", NBINS, ptrange));
+      ptRespNgenJetPF_genJetWidth_w.push_back(new TProfile(char_add(str, "pt_resp_nGenJetPF_genJetWidth_w"), "", NBINS, ptrange));
 
       nGenPF_w_hist.push_back(         new TH2D(char_add(str, "nGenPF_hist_w"), "", NBINS, ptrange, NPFBINS, pfrange));
       perPtBin.push_back(              new TH1D(char_add(str, "per_pt_bin"), "", NBINS, ptrange));
@@ -198,6 +210,10 @@ fChain->SetBranchStatus("genJetPF_dR", 1);
    double gprob_genJetMultiplicity;
    double qprob_genJetMultiplicity;
    double genJetMultiplicity_w;
+   double gprob_nGenJetPF_genJetWidth;
+   double qprob_nGenJetPF_genJetWidth;
+   double nGenJetPF_genJetWidth_w;
+
    vector<double> angularities;
 
    double nUEPF_per_A = nUEPF_perA_hist->GetMean();
@@ -239,7 +255,7 @@ fChain->SetBranchStatus("genJetPF_dR", 1);
             }
          }
 
-         resp = jetPt/genJetPt; // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+         resp = jetRawPt/genJetPt; // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
          gprob = gHist2->GetBinContent(gHist2->FindBin(usedWeightPt, nGenJetPF));
          qprob = qHist2->GetBinContent(qHist2->FindBin(usedWeightPt, nGenJetPF));
@@ -250,7 +266,7 @@ fChain->SetBranchStatus("genJetPF_dR", 1);
          gprob_genJetMass = gGenJetMass_probs->GetBinContent(gGenJetMass_probs->FindBin(usedWeightPt, genJetMass));
          qprob_genJetMass = qGenJetMass_probs->GetBinContent(qGenJetMass_probs->FindBin(usedWeightPt, genJetMass));
 
-         angularities = CalculateAngularity({0.5, 1, 1, 0}, {1, 1, 2, 0});
+         angularities = CalculateAngularity({1, 1, 1, 0}, {0.5, 1, 2, 0});
          gprob_genJetLHA = genJetLHA_probs.at(GLUON)->GetBinContent(genJetLHA_probs.at(GLUON)->FindBin(usedWeightPt, angularities.at(0)));
          qprob_genJetLHA = genJetLHA_probs.at(QUARK)->GetBinContent(genJetLHA_probs.at(QUARK)->FindBin(usedWeightPt, angularities.at(0)));
 
@@ -262,6 +278,10 @@ fChain->SetBranchStatus("genJetPF_dR", 1);
 
          gprob_genJetMultiplicity = genJetMultiplicity_probs.at(GLUON)->GetBinContent(genJetMultiplicity_probs.at(GLUON)->FindBin(usedWeightPt, angularities.at(3)));
          qprob_genJetMultiplicity = genJetMultiplicity_probs.at(QUARK)->GetBinContent(genJetMultiplicity_probs.at(QUARK)->FindBin(usedWeightPt, angularities.at(3)));
+
+         gprob_nGenJetPF_genJetWidth = nGenJetPF_genJetWidth_probs.at(GLUON)->GetBinContent(nGenJetPF_genJetWidth_probs.at(GLUON)->FindBin(usedWeightPt, static_cast<double>(nGenJetPF), static_cast<double>(angularities.at(1))));
+         qprob_nGenJetPF_genJetWidth = nGenJetPF_genJetWidth_probs.at(QUARK)->GetBinContent(nGenJetPF_genJetWidth_probs.at(QUARK)->FindBin(usedWeightPt, nGenJetPF, angularities.at(1)));
+
          if (isPFSig_perEvent) {
                nPFsum = 0;
                for (int i = 0; i != nPF; ++i) {
@@ -309,6 +329,10 @@ fChain->SetBranchStatus("genJetPF_dR", 1);
                genJetMultiplicity_w = qprob_genJetMultiplicity/gprob_genJetMultiplicity;
             }
             else genJetMultiplicity_w = 0;
+            if (gprob_nGenJetPF_genJetWidth > 0 && qprob_nGenJetPF_genJetWidth > 0) {
+               nGenJetPF_genJetWidth_w = qprob_nGenJetPF_genJetWidth/gprob_nGenJetPF_genJetWidth;
+            }
+            else nGenJetPF_genJetWidth_w = 0;
          }
          else {
             if (isPhysUDS) {
@@ -345,7 +369,12 @@ fChain->SetBranchStatus("genJetPF_dR", 1);
                   genJetMultiplicity_w = gprob_genJetMultiplicity/qprob_genJetMultiplicity;
                }
                else genJetMultiplicity_w = 0;
+               if (gprob_nGenJetPF_genJetWidth > 0 && qprob_nGenJetPF_genJetWidth > 0) {
+               nGenJetPF_genJetWidth_w = gprob_nGenJetPF_genJetWidth/qprob_nGenJetPF_genJetWidth;
             }
+            else nGenJetPF_genJetWidth_w = 0;
+            }
+            else type == ELSE;
          }
          if (type == GLUON || type == QUARK) {
             ptResp.at(type)->Fill(usedPlotPt, resp);
@@ -361,7 +390,8 @@ fChain->SetBranchStatus("genJetPF_dR", 1);
             ptRespGenJetLHA_w.at(type)->Fill(usedPlotPt, resp, genJetLHA_w);
             ptRespGenJetWidth_w.at(type)->Fill(usedPlotPt, resp, genJetWidth_w);
             ptRespGenJetThrust_w.at(type)->Fill(usedPlotPt, resp, genJetThrust_w);
-            ptRespGenJetMultiplicity_w.at(type)->Fill(usedPlotPt, resp, genJetMultiplicity_w);         
+            ptRespGenJetMultiplicity_w.at(type)->Fill(usedPlotPt, resp, genJetMultiplicity_w);
+            ptRespNgenJetPF_genJetWidth_w.at(type)->Fill(usedPlotPt, resp, nGenJetPF_genJetWidth_w);
          }
          
          //All
@@ -434,10 +464,15 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
    TFile* file = new TFile("./weightHistos.root", "recreate");
    #endif
 
+   const int NWIDTHBINS = 100;
+   double widthrange[NWIDTHBINS +1];
+   for (int i = 0; i < NWIDTHBINS+1; ++i) {
+      widthrange[i] = i/100;
+   }
+
    vector<TH2D*> nGenPF;
    vector<TH2D*> genJetMass_histos;
    vector<TH2D*> jetGirth_histos;
-
    vector<TH2D*> nGenPF_probs;
    vector<TH2D*> genJetMass_probs;
    vector<TH2D*> jetGirth_probs;
@@ -458,6 +493,9 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
    vector<TH2D*> genJetWidth_probs;
    vector<TH2D*> genJetThrust_probs;
    vector<TH2D*> genJetMultiplicity_probs;
+
+   vector<TH3D*> nGenPF_genJetWidth;
+   vector<TH3D*> nGenPF_genJetWidth_probs;
 
    for (string str : {"gluon_", "quark_"}) {
       nGenPF.push_back(new TH2D(char_add(str, "nGenPF_hist"), "", nptbins, ptrange, npfbins, pfrange));
@@ -485,6 +523,9 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
       genJetWidth_probs.push_back(new TH2D(char_add(str, "genJet_width_probs"), "", nptbins, ptrange, 200, 0, 2));
       genJetThrust_probs.push_back(new TH2D(char_add(str, "genJet_thrust_probs"), "", nptbins, ptrange, 100, 0, 0.5));
       genJetMultiplicity_probs.push_back(new TH2D(char_add(str, "genJet_multiplicity_probs"), "", nptbins, ptrange, 400, 0, 400));
+
+      nGenPF_genJetWidth.push_back(new TH3D(char_add(str,"nGenJetPF_genJetWidth"), "", nptbins, ptrange, npfbins, pfrange, NWIDTHBINS, widthrange));
+      nGenPF_genJetWidth_probs.push_back(new TH3D(char_add(str,"nGenJetPF_genJetWidth_probs"), "", nptbins, ptrange, npfbins, pfrange, NWIDTHBINS, widthrange));
    }
 
    int nPFsum;
@@ -538,6 +579,7 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
                type = QUARK;
                ++quark_jets;
             }
+            else type = ELSE;
          }
          if (recoWeighted) {
             usedWeightPt = jetPt;
@@ -545,7 +587,8 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
          else {
             if (rawWeighted) {
                usedWeightPt = jetRawPt;
-            } 
+               cout << "Yeah!" << endl;
+            }
             else {
                usedWeightPt = genJetPt;
             }
@@ -601,11 +644,12 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
             nGenPF.at(type)->Fill(usedWeightPt, nGenJetPF);
             genJetMass_histos.at(type)->Fill(usedWeightPt, genJetMass);
             jetGirth_histos.at(type)->Fill(usedWeightPt, jetGirth);
-            angularities = CalculateAngularity({0.5, 1, 1, 0}, {1, 1, 2, 0});
+            angularities = CalculateAngularity({1, 1, 1, 0}, {0.5, 1, 2, 0});
             genJetLHA.at(type)->Fill(usedWeightPt, angularities.at(0));
             genJetWidth.at(type)->Fill(usedWeightPt, angularities.at(1));
             genJetThrust.at(type)->Fill(usedWeightPt, angularities.at(2));
             genJetMultiplicity.at(type)->Fill(usedWeightPt, angularities.at(3));
+            nGenPF_genJetWidth.at(type)->Fill(usedWeightPt, nGenJetPF, angularities.at(1));
             if (isPFSig_perEvent) {
                nGenPFSig.at(type)->Fill(usedWeightPt, nGenPFSig_value);
             }
@@ -666,6 +710,7 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
             if (isPhysUDS) {
                   type = QUARK;
                }
+               else type = ELSE;
             if (type == GLUON || type == QUARK) {
                nUEPF = jetArea*nUEPF_per_A;
                nGenPFSig_value = nGenJetPF - nUEPF;
@@ -694,6 +739,8 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
    CalculateProbs(genJetWidth.at(GLUON), genJetWidth.at(QUARK), genJetWidth_probs.at(GLUON), genJetWidth_probs.at(QUARK));
    CalculateProbs(genJetThrust.at(GLUON), genJetThrust.at(QUARK), genJetThrust_probs.at(GLUON), genJetThrust_probs.at(QUARK));
    CalculateProbs(genJetMultiplicity.at(GLUON), genJetMultiplicity.at(QUARK), genJetMultiplicity_probs.at(GLUON), genJetMultiplicity_probs.at(QUARK));
+
+   CalculateProbs3D(nGenPF_genJetWidth.at(GLUON), nGenPF_genJetWidth.at(QUARK), nGenPF_genJetWidth_probs.at(GLUON), nGenPF_genJetWidth_probs.at(QUARK));
 
    cout << "probability calculated" << endl;
 
@@ -736,10 +783,10 @@ void GluonHistosFill::CalculateProbs3D(TH3D* gHist, TH3D* qHist, TH3D* gProbs, T
          for (int zb = 1; zb != gHist->GetNbinsZ()+1; ++zb) {
             for (int yb = 1; yb != gHist->GetNbinsY()+1; ++yb) {
                if (gIntegral > 0) {
-                  gProbs->SetBinContent(xb, yb, zb, gHist->GetBinContent(xb, yb) / gIntegral);
+                  gProbs->SetBinContent(xb, yb, zb, gHist->GetBinContent(xb, yb, zb) / gIntegral);
                }
                if (qIntegral > 0 && qHist != nullptr) {
-                  qProbs->SetBinContent(xb, yb, zb, qHist->GetBinContent(xb, yb) / qIntegral);
+                  qProbs->SetBinContent(xb, yb, zb, qHist->GetBinContent(xb, yb, zb) / qIntegral);
                }
             }
          }

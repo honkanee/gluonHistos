@@ -2,6 +2,7 @@
 #include <TChain.h>
 #include <TFile.h>
 #include <TH2.h>
+#include <TH3.h>
 #include <TProfile.h>
 #include <TCanvas.h>
 #include <TAxis.h>
@@ -23,8 +24,8 @@ enum {GLUON, QUARK, ALL};
 void drawGluonHistos() {
     setTDRStyle();
 
-    TFile* f = TFile::Open("outputGluonHistos.root");
-    TFile* f2 = TFile::Open("weightHistos.root");
+    TFile* f = TFile::Open("outputGluonHistos_reco_genW.root");
+    TFile* f2 = TFile::Open("weightHistos_reco_genW.root");
 
     //All
     TH2D* nUEPF_pt_hist;
@@ -46,6 +47,7 @@ void drawGluonHistos() {
     vector<TProfile*> pt_resp_genJetWidth_w(3);
     vector<TProfile*> pt_resp_genJetThrust_w(3);
     vector<TProfile*> pt_resp_genJetMultiplicity_w(3);
+    vector<TProfile*> pt_resp_nGenJetPF_genJetWidth_w(3);
 
     vector<TH1D*> pt_resp_gaus(3);
     vector<TH1D*> pt_resp_nGenJetPF_w_gaus(3);
@@ -62,6 +64,8 @@ void drawGluonHistos() {
     vector<TH2D*> genJetWidth_probs(3);
     vector<TH2D*> genJetThrust_probs(3);
     vector<TH2D*> genJetMultiplicity_probs(3);
+
+    vector<TH3D*> nGenJetPF_genJetWidth_probs(3);
 
     vector<TH1D*> dR_nPF_fromPV0(3);
     vector<TH1D*> dR_nPF_fromPV1(3);
@@ -85,6 +89,7 @@ void drawGluonHistos() {
     f->GetObject(char_add(str, "pt_resp_genJetWidth_w"), pt_resp_genJetWidth_w.at(type));
     f->GetObject(char_add(str, "pt_resp_genJetThrust_w"), pt_resp_genJetThrust_w.at(type));
     f->GetObject(char_add(str, "pt_resp_genJetMultiplicity_w"), pt_resp_genJetMultiplicity_w.at(type));
+    f->GetObject(char_add(str, "pt_resp_nGenJetPF_genJetWidth_w"), pt_resp_nGenJetPF_genJetWidth_w.at(type));
 
     f->GetObject(char_add(str, "pt_resp_gaus"), pt_resp_gaus.at(type));
     f->GetObject(char_add(str, "pt_resp_nGenJetPF_w_gaus"), pt_resp_nGenJetPF_w_gaus.at(type));
@@ -100,6 +105,7 @@ void drawGluonHistos() {
     f2->GetObject(char_add(str, "genJet_width_probs"), genJetWidth_probs.at(type));
     f2->GetObject(char_add(str, "genJet_thrust_probs"), genJetThrust_probs.at(type));
     f2->GetObject(char_add(str, "genJet_multiplicity_probs"), genJetMultiplicity_probs.at(type));
+    f2->GetObject(char_add(str, "nGenJetPF_genJetWidth_probs"), nGenJetPF_genJetWidth_probs.at(type));
 
     f2->GetObject(char_add(str, "dR_nPF_fromPV0"), dR_nPF_fromPV0.at(type));
     f2->GetObject(char_add(str, "dR_nPF_fromPV1"), dR_nPF_fromPV1.at(type));
@@ -140,8 +146,8 @@ void drawGluonHistos() {
     leg1->AddEntry(pt_resp.at(ALL), "All", "PLE");
     leg1->AddEntry(pt_resp.at(GLUON), "Gluons", "PLE");
     leg1->AddEntry(pt_resp.at(QUARK), "Quarks", "PLE");
-    leg1->AddEntry(pt_resp_nGenJetPF_w.at(GLUON), "Gluons weighted", "PLE");
-    leg1->AddEntry(pt_resp_nGenJetPF_w.at(QUARK), "Quarks weighted", "PLE");
+    leg1->AddEntry(pt_resp_nGenJetPF_w.at(GLUON), "Gluons weighted nGenJetPF", "PLE");
+    leg1->AddEntry(pt_resp_nGenJetPF_w.at(QUARK), "Quarks weighted nGenJetPF", "PLE");
 //    leg1->AddEntry(pt_resp_nGenJetPFSig_w.at(GLUON), "Gluons weighted (sig)", "PLE");
 //    leg1->AddEntry(pt_resp_nGenJetPFSig_w.at(QUARK), "Quarks weighted (sig)", "PLE");
 
@@ -462,7 +468,8 @@ void drawGluonHistos() {
     */
 
     vector<vector<TH2D*>> probs_histos = {genJetMass_probs, jetGirth_probs, genJetLHA_probs, genJetWidth_probs, genJetThrust_probs, genJetMultiplicity_probs};
-    vector<char*> y_label = {"Mass", "Girth", "LHA", "Width", "Thrust", "Multiplicity"};
+    vector<const char*> y_label = {static_cast<const char*>("Mass"), static_cast<const char*>("Girth"), static_cast<const char*>("LHA"), static_cast<const char*>("Width"),
+    static_cast<const char*>("Thrust"), static_cast<const char*>("Multiplicity")};
     for (int i = 0; i != probs_histos.size(); ++i) {
         TCanvas* c4 = new TCanvas(char_add("c", to_string(30 + i)), char_add("c", to_string(30 + i)),1400,700);
         c4->Divide(2,1);
@@ -489,8 +496,9 @@ void drawGluonHistos() {
     }
 
     //Pt response jetGirth weighted
-    vector<string> legend_str = {" mass", " girth", " LHA", " width", " thrust", " multiplicity"};
-    vector<vector<TProfile*>> profiles = {pt_resp_genJetMass_w, pt_resp_jetGirth_w, pt_resp_genJetLHA_w, pt_resp_genJetWidth_w, pt_resp_genJetThrust_w, pt_resp_genJetMultiplicity_w};
+    vector<string> legend_str = {" mass", " girth", " LHA", " width", " thrust", " multiplicity", " nGenJetPF+Width"};
+    vector<vector<TProfile*>> profiles = {pt_resp_genJetMass_w, pt_resp_jetGirth_w, pt_resp_genJetLHA_w, pt_resp_genJetWidth_w, pt_resp_genJetThrust_w, 
+    pt_resp_genJetMultiplicity_w, pt_resp_nGenJetPF_genJetWidth_w};
     vector<TProfile*> plotted_pt_prof;
     for (int i = 0; i != profiles.size(); ++i) {
         plotted_pt_prof = profiles.at(i);
@@ -514,9 +522,34 @@ void drawGluonHistos() {
         leg5->AddEntry(pt_resp.at(ALL), "All", "PLE");
         leg5->AddEntry(pt_resp.at(GLUON), "Gluons", "PLE");
         leg5->AddEntry(pt_resp.at(QUARK), "Quarks", "PLE");
-        leg5->AddEntry(plotted_pt_prof.at(GLUON), char_add("Gluons weighted", legend_str.at(i)), "PLE");
-        leg5->AddEntry(plotted_pt_prof.at(QUARK), char_add("Quarks weighted", legend_str.at(i)), "PLE");
+        leg5->AddEntry(plotted_pt_prof.at(GLUON), char_add("Gluons w", legend_str.at(i)), "PLE");
+        leg5->AddEntry(plotted_pt_prof.at(QUARK), char_add("Quarks w", legend_str.at(i)), "PLE");
 
         tex->DrawLatex(0.15, 0.95,"|#eta|<1.3");
     }
+
+    TCanvas* c40 = new TCanvas("c40", "c40", 1400, 700);
+    c40->Divide(2,1);
+
+    c40->cd(1);
+    nGenJetPF_genJetWidth_probs.at(GLUON)->SetAxisRange(30, 3500, "X");
+    gPad->SetLogx();
+    nGenJetPF_genJetWidth_probs.at(GLUON)->GetXaxis()->SetTitle("gen p_{T} (GeV)");
+    nGenJetPF_genJetWidth_probs.at(GLUON)->GetYaxis()->SetTitle("nGenJetPF");
+    nGenJetPF_genJetWidth_probs.at(GLUON)->GetZaxis()->SetTitle("Width");
+    //nGenJetPF_genJetWidth_probs.at(GLUON)->SetAxisRange(0,0.1,"Z");
+    nGenJetPF_genJetWidth_probs.at(GLUON)->Draw("BOX2");
+
+    gt->Draw();
+
+    c40->cd(2);
+    nGenJetPF_genJetWidth_probs.at(QUARK)->SetAxisRange(30, 3500,"X");
+    gPad->SetLogx();
+    nGenJetPF_genJetWidth_probs.at(QUARK)->GetXaxis()->SetTitle("gen p_{T} (GeV)");
+    nGenJetPF_genJetWidth_probs.at(QUARK)->GetYaxis()->SetTitle("nGenJetPF");
+    nGenJetPF_genJetWidth_probs.at(QUARK)->GetZaxis()->SetTitle("Width");
+    //nGenJetPF_genJetWidth_probs.at(QUARK)->SetAxisRange(0,0.1, "Z");
+    nGenJetPF_genJetWidth_probs.at(QUARK)->Draw("BOX2");
+
+    qt->Draw();
 }
