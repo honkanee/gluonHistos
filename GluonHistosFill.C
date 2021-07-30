@@ -39,10 +39,6 @@ fChain->SetBranchStatus("jetRawPt", 1);
 fChain->SetBranchStatus("genJetPF_pT", 1);
 fChain->SetBranchStatus("genJetPF_dR", 1);
 
-// METHOD2: replace line
-//    fChain->GetEntry(jentry);       //read all branches
-//by  b_branchname->GetEntry(ientry); //read only this branch
-
    if (fChain == 0) return;
 
    const int NBINS = 62;
@@ -255,7 +251,7 @@ fChain->SetBranchStatus("genJetPF_dR", 1);
             }
          }
 
-         resp = jetRawPt/genJetPt; // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+         resp = jetRawPt/genJetPt; // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< RESPONSE
 
          gprob = gHist2->GetBinContent(gHist2->FindBin(usedWeightPt, nGenJetPF));
          qprob = qHist2->GetBinContent(qHist2->FindBin(usedWeightPt, nGenJetPF));
@@ -282,7 +278,7 @@ fChain->SetBranchStatus("genJetPF_dR", 1);
          gprob_nGenJetPF_genJetWidth = nGenJetPF_genJetWidth_probs.at(GLUON)->GetBinContent(nGenJetPF_genJetWidth_probs.at(GLUON)->FindBin(usedWeightPt, static_cast<double>(nGenJetPF), static_cast<double>(angularities.at(1))));
          qprob_nGenJetPF_genJetWidth = nGenJetPF_genJetWidth_probs.at(QUARK)->GetBinContent(nGenJetPF_genJetWidth_probs.at(QUARK)->FindBin(usedWeightPt, nGenJetPF, angularities.at(1)));
 
-         if (isPFSig_perEvent) {
+         if (PFSig_perEvent) {
                nPFsum = 0;
                for (int i = 0; i != nPF; ++i) {
                if (PF_dR[i] > dR_in && PF_dR[i] < dR_out && PF_fromPV[i] == 3) {
@@ -587,7 +583,6 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
          else {
             if (rawWeighted) {
                usedWeightPt = jetRawPt;
-               cout << "Yeah!" << endl;
             }
             else {
                usedWeightPt = genJetPt;
@@ -650,7 +645,7 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
             genJetThrust.at(type)->Fill(usedWeightPt, angularities.at(2));
             genJetMultiplicity.at(type)->Fill(usedWeightPt, angularities.at(3));
             nGenPF_genJetWidth.at(type)->Fill(usedWeightPt, nGenJetPF, angularities.at(1));
-            if (isPFSig_perEvent) {
+            if (PFSig_perEvent) {
                nGenPFSig.at(type)->Fill(usedWeightPt, nGenPFSig_value);
             }
          }
@@ -684,7 +679,7 @@ void GluonHistosFill::FillWeightHistos(int nptbins, double* ptrange, int npfbins
    nUEPF_per_A = nUEPF_perA_hist->GetMean();
    cout << nUEPF_per_A << endl;
 
-   if (!isPFSig_perEvent) {
+   if (!PFSig_perEvent) {
       nentries = fChain->GetEntriesFast();
       nbytes = 0, nb = 0;
       for (Long64_t jentry=0; jentry<nentries;jentry++) {
@@ -794,6 +789,7 @@ void GluonHistosFill::CalculateProbs3D(TH3D* gHist, TH3D* qHist, TH3D* gProbs, T
    }
 }
 
+// Not tested yet!
 void  GluonHistosFill::CalculateProbsNdim(THnD* hist, THnD* probs)
 {
    int d;

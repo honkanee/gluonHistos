@@ -24,8 +24,8 @@ enum {GLUON, QUARK, ALL};
 void drawGluonHistos() {
     setTDRStyle();
 
-    TFile* f = TFile::Open("outputGluonHistos_reco_genW.root");
-    TFile* f2 = TFile::Open("weightHistos_reco_genW.root");
+    TFile* f = TFile::Open("outputGluonHistos_raw_genW.root");
+    TFile* f2 = TFile::Open("weightHistos_raw_genW.root");
 
     //All
     TH2D* nUEPF_pt_hist;
@@ -495,7 +495,7 @@ void drawGluonHistos() {
         probs_histos.at(i).at(QUARK)->Draw("colz");
     }
 
-    //Pt response jetGirth weighted
+    //Pt response weighted with different values
     vector<string> legend_str = {" mass", " girth", " LHA", " width", " thrust", " multiplicity", " nGenJetPF+Width"};
     vector<vector<TProfile*>> profiles = {pt_resp_genJetMass_w, pt_resp_jetGirth_w, pt_resp_genJetLHA_w, pt_resp_genJetWidth_w, pt_resp_genJetThrust_w, 
     pt_resp_genJetMultiplicity_w, pt_resp_nGenJetPF_genJetWidth_w};
