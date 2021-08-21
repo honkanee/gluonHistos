@@ -24,8 +24,8 @@ enum {GLUON, QUARK, ALL};
 void drawGluonHistos() {
     setTDRStyle();
 
-    TFile* f = TFile::Open("outputGluonHistos_raw_genW.root");
-    TFile* f2 = TFile::Open("weightHistos_raw_genW.root");
+    TFile* f = TFile::Open("outputGluonHistos_raw.root");
+    TFile* f2 = TFile::Open("weightHistos.root");
 
     //All
     TH2D* nUEPF_pt_hist;
@@ -47,7 +47,17 @@ void drawGluonHistos() {
     vector<TProfile*> pt_resp_genJetWidth_w(3);
     vector<TProfile*> pt_resp_genJetThrust_w(3);
     vector<TProfile*> pt_resp_genJetMultiplicity_w(3);
+    vector<TProfile*> pt_resp_genJetPtD_w(3);
     vector<TProfile*> pt_resp_nGenJetPF_genJetWidth_w(3);
+
+    vector<TH2D*> N_R_30(3);
+    vector<TH2D*> N_R_60(3);
+    vector<TH2D*> N_R_120(3);
+    vector<TH2D*> N_R_240(3);
+    vector<TH2D*> N_R_480(3);
+    vector<TH2D*> N_R_960(3);
+    vector<TH2D*> N_R_1920(3);
+    vector<TH2D*> N_R_3840(3);
 
     vector<TH1D*> pt_resp_gaus(3);
     vector<TH1D*> pt_resp_nGenJetPF_w_gaus(3);
@@ -89,7 +99,17 @@ void drawGluonHistos() {
     f->GetObject(char_add(str, "pt_resp_genJetWidth_w"), pt_resp_genJetWidth_w.at(type));
     f->GetObject(char_add(str, "pt_resp_genJetThrust_w"), pt_resp_genJetThrust_w.at(type));
     f->GetObject(char_add(str, "pt_resp_genJetMultiplicity_w"), pt_resp_genJetMultiplicity_w.at(type));
+    f->GetObject(char_add(str, "pt_resp_genJetPtD_w"), pt_resp_genJetPtD_w.at(type));
     f->GetObject(char_add(str, "pt_resp_nGenJetPF_genJetWidth_w"), pt_resp_nGenJetPF_genJetWidth_w.at(type));
+
+    f->GetObject(char_add(str, "N_R_30_norm"), N_R_30.at(type));
+    f->GetObject(char_add(str, "N_R_60_norm"), N_R_60.at(type));
+    f->GetObject(char_add(str, "N_R_120_norm"), N_R_120.at(type));
+    f->GetObject(char_add(str, "N_R_240_norm"), N_R_240.at(type));
+    f->GetObject(char_add(str, "N_R_480_norm"), N_R_480.at(type));
+    f->GetObject(char_add(str, "N_R_960_norm"), N_R_960.at(type));
+    f->GetObject(char_add(str, "N_R_1920_norm"), N_R_1920.at(type));
+    f->GetObject(char_add(str, "N_R_3840_norm"), N_R_3840.at(type));
 
     f->GetObject(char_add(str, "pt_resp_gaus"), pt_resp_gaus.at(type));
     f->GetObject(char_add(str, "pt_resp_nGenJetPF_w_gaus"), pt_resp_nGenJetPF_w_gaus.at(type));
@@ -114,10 +134,10 @@ void drawGluonHistos() {
     ++type;
    }
 
-   TH2D* nGenJetPF_likelihood;
+    TLatex *tex = new TLatex(); tex->SetNDC();
+    tex->SetTextSize(0.05); tex->SetTextColor(kBlack);
 
-    f->GetObject("nGenJetPF_likelyhood", nGenJetPF_likelihood);
-
+/*
     //Pt response
     TH1D* h = tdrHist("h", "Response", 0.9, 1.2,
     "gen p_{T} (GeV)", 30, 3500);
@@ -151,8 +171,6 @@ void drawGluonHistos() {
 //    leg1->AddEntry(pt_resp_nGenJetPFSig_w.at(GLUON), "Gluons weighted (sig)", "PLE");
 //    leg1->AddEntry(pt_resp_nGenJetPFSig_w.at(QUARK), "Quarks weighted (sig)", "PLE");
 
-    TLatex *tex = new TLatex(); tex->SetNDC();
-    tex->SetTextSize(0.05); tex->SetTextColor(kBlack);
     tex->DrawLatex(0.15, 0.95,"|#eta|<1.3");
 
     //Response gaus
@@ -304,20 +322,6 @@ void drawGluonHistos() {
     TText *qt2 = new TText(0.5, 0.5, "quarks");
     qt2->Draw();
 
-    //likelihood
-    TH1D* h3 = tdrHist("h3", "nGenPF", 10, 70,
-    "p_{T} (GeV)", 30, 3500);
-    h3->GetXaxis()->SetNoExponent();
-    h3->GetXaxis()->SetMoreLogLabels();
-    tdrCanvas("c6", h3, 4, 11,  kSquare);
-    gPad->SetLogx();
-
-    nGenJetPF_likelihood->SetAxisRange(30, 3500, "X");
-    nGenJetPF_likelihood->SetAxisRange(0, 150, "Y");
-    nGenJetPF_likelihood->GetXaxis()->SetTitle("gen p_{T} (GeV)");
-    nGenJetPF_likelihood->GetYaxis()->SetTitle("n_{GenJetPF}");
-    nGenJetPF_likelihood->Draw("colz");
-
     //nUEPF
     TCanvas* c9 = new TCanvas("c9", "c9", 700, 700);
     c9->SetRightMargin(0.15);
@@ -444,7 +448,6 @@ void drawGluonHistos() {
     tex->DrawLatex(0.5, 0.95,"PF_{fromPV} = 3");
     leg4->Draw();
 
-/*
     TH1D* h9 = tdrHist("h9", "N", 0, 10, "dR", 0, 1.5);
     tdrCanvas("c15", h9, 4, 11, true);
     gPad->SetLogy();
@@ -465,7 +468,6 @@ void drawGluonHistos() {
     leg5->AddEntry(dR_nPF_fromPV1, "PF_{fromPV} = 1", "PLE");
     leg5->AddEntry(dR_nPF_fromPV2, "PF_{fromPV} = 2", "PLE");
     leg5->AddEntry(dR_nPF_fromPV3, "PF_{fromPV} = 3", "PLE");
-    */
 
     vector<vector<TH2D*>> probs_histos = {genJetMass_probs, jetGirth_probs, genJetLHA_probs, genJetWidth_probs, genJetThrust_probs, genJetMultiplicity_probs};
     vector<const char*> y_label = {static_cast<const char*>("Mass"), static_cast<const char*>("Girth"), static_cast<const char*>("LHA"), static_cast<const char*>("Width"),
@@ -496,23 +498,38 @@ void drawGluonHistos() {
     }
 
     //Pt response weighted with different values
-    vector<string> legend_str = {" mass", " girth", " LHA", " width", " thrust", " multiplicity", " nGenJetPF+Width"};
+    vector<string> legend_str = {" mass", " girth", " LHA", " width", " thrust", " multiplicity", " pTD^2", " nGenJetPF+Width"};
     vector<vector<TProfile*>> profiles = {pt_resp_genJetMass_w, pt_resp_jetGirth_w, pt_resp_genJetLHA_w, pt_resp_genJetWidth_w, pt_resp_genJetThrust_w, 
-    pt_resp_genJetMultiplicity_w, pt_resp_nGenJetPF_genJetWidth_w};
+    pt_resp_genJetMultiplicity_w, pt_resp_genJetPtD_w, pt_resp_nGenJetPF_genJetWidth_w};
     vector<TProfile*> plotted_pt_prof;
+
+    TH1D* allHist = pt_resp.at(ALL)->ProjectionX();
+    pt_resp.at(GLUON)->Divide(allHist);
+    pt_resp.at(QUARK)->Divide(allHist);
+    pt_resp.at(ALL)->Divide(allHist);
+    pt_resp.at(GLUON)->SetAxisRange(30, 3500, "X");
+    pt_resp.at(QUARK)->SetAxisRange(30, 3500, "X");
+    pt_resp.at(ALL)->SetAxisRange(30, 3500, "X");
+
     for (int i = 0; i != profiles.size(); ++i) {
         plotted_pt_prof = profiles.at(i);
 
-        h->SetAxisRange(0.95, 1.1, "X");
+        plotted_pt_prof.at(GLUON)->Divide(allHist);
+        plotted_pt_prof.at(QUARK)->Divide(allHist);
+
+        h->SetAxisRange(0.95, 1.1, "Y");
         TCanvas* c16 = tdrCanvas(char_add("c", to_string(16 + i)), h, 4, 11, kSquare);
         h->GetXaxis()->SetMoreLogLabels();
         gPad->SetLogx();
 
+        plotted_pt_prof.at(GLUON)->SetAxisRange(30, 3500, "X");
+        plotted_pt_prof.at(QUARK)->SetAxisRange(30, 3500, "X");
+
         tdrDraw(pt_resp.at(ALL), "P", kOpenCircle, kBlack);
-        tdrDraw(pt_resp.at(GLUON), "", kFullCircle, kRed);
-        tdrDraw(plotted_pt_prof.at(GLUON), "", kFullTriangleUp, kRed);
-        tdrDraw(pt_resp.at(QUARK), "", kFullCircle, kBlue);
-        tdrDraw(plotted_pt_prof.at(QUARK), "", kFullTriangleUp, kBlue);
+        tdrDraw(pt_resp.at(GLUON), "P", kFullCircle, kRed);
+        tdrDraw(plotted_pt_prof.at(GLUON), "P", kFullTriangleUp, kRed);
+        tdrDraw(pt_resp.at(QUARK), "P", kFullCircle, kBlue);
+        tdrDraw(plotted_pt_prof.at(QUARK), "P", kFullTriangleUp, kBlue);
         pt_resp.at(GLUON)->SetMarkerSize(1.2);
         plotted_pt_prof.at(GLUON)->SetMarkerSize(1.2);
         pt_resp.at(QUARK)->SetMarkerSize(1.2);
@@ -552,4 +569,91 @@ void drawGluonHistos() {
     nGenJetPF_genJetWidth_probs.at(QUARK)->Draw("BOX2");
 
     qt->Draw();
+*/
+
+    TFile* f3 = TFile::Open("outputGluonHistos_gen.root");
+
+    vector<TH2D*> N_R_30_other(3);
+    vector<TH2D*> N_R_60_other(3);
+    vector<TH2D*> N_R_120_other(3);
+    vector<TH2D*> N_R_240_other(3);
+    vector<TH2D*> N_R_480_other(3);
+    vector<TH2D*> N_R_960_other(3);
+    vector<TH2D*> N_R_1920_other(3);
+    vector<TH2D*> N_R_3840_other(3);
+
+    type = 0;
+    for (string str : {"gluon_", "quark_", "all_"}) {
+        f3->GetObject(char_add(str, "N_R_30_norm"), N_R_30_other.at(type));
+        f3->GetObject(char_add(str, "N_R_60_norm"), N_R_60_other.at(type));
+        f3->GetObject(char_add(str, "N_R_120_norm"), N_R_120_other.at(type));
+        f3->GetObject(char_add(str, "N_R_240_norm"), N_R_240_other.at(type));
+        f3->GetObject(char_add(str, "N_R_480_norm"), N_R_480_other.at(type));
+        f3->GetObject(char_add(str, "N_R_960_norm"), N_R_960_other.at(type));
+        f3->GetObject(char_add(str, "N_R_1920_norm"), N_R_1920_other.at(type));
+        f3->GetObject(char_add(str, "N_R_3840_norm"), N_R_3840_other.at(type));
+        ++type;
+    }
+
+    Width_t width = 3;
+
+    //
+    vector<TProfile*> profs_GQ(3);
+    vector<TProfile*> profs_otherPt(3);
+    vector<TH2D*> N_R_2D;
+    vector<vector<TH2D*>> NR_histos = {N_R_30, N_R_60, N_R_120, N_R_240, N_R_480, N_R_960, N_R_1920, N_R_3840};
+    vector<vector<TH2D*>> NR_histos_other = {N_R_30_other, N_R_60_other, N_R_120_other, N_R_240_other, N_R_480_other, N_R_960_other, N_R_1920_other, N_R_3840};
+    for (int i = 0; i != NR_histos.size(); ++i) {
+        N_R_2D = NR_histos.at(i);
+        profs_GQ.at(GLUON) = N_R_2D.at(GLUON)->ProfileX(char_add("same_gluon", to_string(i)));
+        profs_GQ.at(QUARK) = N_R_2D.at(QUARK)->ProfileX(char_add("same_quark", to_string(i)));
+        profs_otherPt.at(GLUON) = NR_histos_other.at(i).at(GLUON)->ProfileX(char_add("other_gluon", to_string(i)));
+        profs_otherPt.at(QUARK) = NR_histos_other.at(i).at(QUARK)->ProfileX(char_add("other_quark", to_string(i)));
+        TCanvas* c50 = new TCanvas(char_add("c", to_string(50 + i)), char_add("c", to_string(50 + i)),1500,700);
+        c50->Divide(2,1);
+
+        c50->cd(1);
+        N_R_2D.at(GLUON)->SetAxisRange(0.5, 1.8, "Y");
+        N_R_2D.at(GLUON)->SetAxisRange(0, 130, "X");
+        N_R_2D.at(GLUON)->GetXaxis()->SetTitle("N");
+        N_R_2D.at(GLUON)->GetYaxis()->SetTitle("R");
+        N_R_2D.at(GLUON)->GetZaxis()->SetTitle("count");
+        N_R_2D.at(GLUON)->Draw("colz");
+        profs_GQ.at(GLUON)->Draw("HISTPSAME");
+        profs_GQ.at(QUARK)->Draw("HISTPSAME");
+        profs_otherPt.at(GLUON)->Draw("HISTPSAME");
+
+        gPad->SetLogz();
+
+        tex->DrawLatex(0.15, 0.95, char_add("Gluons, correllation factor: ", to_string(N_R_2D.at(GLUON)->GetCorrelationFactor())));
+
+        c50->cd(2);
+        N_R_2D.at(QUARK)->SetAxisRange(0.5, 1.8, "Y");
+        N_R_2D.at(QUARK)->SetAxisRange(0, 130,"X");
+        N_R_2D.at(QUARK)->GetXaxis()->SetTitle("N");
+        N_R_2D.at(QUARK)->GetYaxis()->SetTitle("R");
+        N_R_2D.at(QUARK)->GetZaxis()->SetTitle("count");
+        N_R_2D.at(QUARK)->Draw("colz");
+        profs_GQ.at(GLUON)->Draw("HISTPSAME");
+        profs_GQ.at(QUARK)->Draw("HISTPSAME");
+        profs_otherPt.at(QUARK)->Draw("HISTP*SAME");
+
+        gPad->SetLogz();
+
+        profs_GQ.at(GLUON)->SetMarkerStyle(kFullCircle);
+        profs_GQ.at(GLUON)->SetMarkerColor(kRed);
+        profs_GQ.at(GLUON)->SetMarkerSize(0.8);
+        profs_GQ.at(QUARK)->SetMarkerStyle(kFullCircle);
+        profs_GQ.at(QUARK)->SetMarkerColor(kBlue);
+        profs_GQ.at(QUARK)->SetMarkerSize(0.8);
+
+        profs_otherPt.at(GLUON)->SetMarkerStyle(kFullCircle);
+        profs_otherPt.at(GLUON)->SetMarkerColor(kBlack);
+        profs_otherPt.at(GLUON)->SetMarkerSize(0.8);
+        profs_otherPt.at(QUARK)->SetMarkerStyle(kFullCircle);
+        profs_otherPt.at(QUARK)->SetMarkerColor(kBlack);
+        profs_otherPt.at(QUARK)->SetMarkerSize(0.8);
+
+        tex->DrawLatex(0.15, 0.95, char_add("Quarks, correllation factor: ", to_string(N_R_2D.at(QUARK)->GetCorrelationFactor())));
+    }
 }
