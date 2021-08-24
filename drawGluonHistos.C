@@ -24,7 +24,7 @@ enum {GLUON, QUARK, ALL};
 void drawGluonHistos() {
     setTDRStyle();
 
-    TFile* f = TFile::Open("outputGluonHistos_raw.root");
+    TFile* f = TFile::Open("outputGluonHistos.root");
     TFile* f2 = TFile::Open("weightHistos.root");
 
     //All
@@ -82,6 +82,8 @@ void drawGluonHistos() {
     vector<TH1D*> dR_nPF_fromPV2(3);
     vector<TH1D*> dR_nPF_fromPV3(3);
 
+    vector<TH2D*> neutralPtFrac(3);
+
     int type = 0;
 
    for (string str : {"gluon_", "quark_", "all_"}) {
@@ -131,6 +133,9 @@ void drawGluonHistos() {
     f2->GetObject(char_add(str, "dR_nPF_fromPV1"), dR_nPF_fromPV1.at(type));
     f2->GetObject(char_add(str, "dR_nPF_fromPV2"), dR_nPF_fromPV2.at(type));
     f2->GetObject(char_add(str, "dR_nPF_fromPV3"), dR_nPF_fromPV3.at(type));
+
+    f2->GetObject(char_add(str, "genJet_neutral_pT_fraction"), neutralPtFrac.at(type));
+
     ++type;
    }
 
@@ -656,4 +661,38 @@ void drawGluonHistos() {
 
         tex->DrawLatex(0.15, 0.95, char_add("Quarks, correllation factor: ", to_string(N_R_2D.at(QUARK)->GetCorrelationFactor())));
     }
+
+    TCanvas* c60 = new TCanvas("c60", "60", 1500, 700);
+    c60->Divide(2,1);
+
+    c60->cd(1);
+    neutralPtFrac.at(GLUON)->SetAxisRange(30, 3500, "X");
+    neutralPtFrac.at(GLUON)->Draw("colz");
+    neutralPtFrac.at(GLUON)->GetXaxis()->SetTitle("p_{T, jet}");
+    neutralPtFrac.at(GLUON)->GetYaxis()->SetTitle("p_{T, neutral}/p_{T, jet}");
+    gPad->SetLogx();
+    gPad->SetLogz();
+
+    c60->cd(2);
+    neutralPtFrac.at(QUARK)->SetAxisRange(30, 3500, "X");
+    neutralPtFrac.at(QUARK)->Draw("colz");
+    neutralPtFrac.at(QUARK)->GetXaxis()->SetTitle("p_{T, jet}");
+    neutralPtFrac.at(QUARK)->GetYaxis()->SetTitle("p_{T, neutral}/p_{T, jet}");
+    gPad->SetLogx();
+    gPad->SetLogz();
+
+    TH1D* h11 = tdrHist("h11", "p_{T, neutral}/p_{T, jet}", 0, 1, "p_{T, jet} (GeV)" , 30, 3500);
+    tdrCanvas("c61", h11, 4, 11, true);
+
+    TProfile* neutralFrac_gluon_profile = neutralPtFrac.at(GLUON)->ProfileX("neutralFrac_gluon_profile");
+    tdrDraw(neutralFrac_gluon_profile, "P", kFullCircle, kRed);
+
+    TProfile* neutralFrac_quark_profile = neutralPtFrac.at(QUARK)->ProfileX("neutralFrac_quark_profile");
+    tdrDraw(neutralFrac_quark_profile, "P", kFullCircle, kBlue);
+
+    gPad->SetLogx();
+
+    TLegend *leg5 = tdrLeg(0.37,0.90-5*0.045,0.57,0.90);
+    leg5->AddEntry(neutralFrac_gluon_profile, "Gluons", "PLE");
+    leg5->AddEntry(neutralFrac_quark_profile, "Quarks", "PLE");
 }
