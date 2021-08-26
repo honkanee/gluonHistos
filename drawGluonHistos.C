@@ -20,6 +20,7 @@ char* char_add(string a, string b) {
 }
 
 enum {GLUON, QUARK, ALL};
+enum {G, UD, S};
 
 void drawGluonHistos() {
     setTDRStyle();
@@ -49,6 +50,7 @@ void drawGluonHistos() {
     vector<TProfile*> pt_resp_genJetMultiplicity_w(3);
     vector<TProfile*> pt_resp_genJetPtD_w(3);
     vector<TProfile*> pt_resp_nGenJetPF_genJetWidth_w(3);
+    vector<TProfile*> pt_resp_all_w(3);
 
     vector<TH2D*> N_R_30(3);
     vector<TH2D*> N_R_60(3);
@@ -103,6 +105,7 @@ void drawGluonHistos() {
     f->GetObject(char_add(str, "pt_resp_genJetMultiplicity_w"), pt_resp_genJetMultiplicity_w.at(type));
     f->GetObject(char_add(str, "pt_resp_genJetPtD_w"), pt_resp_genJetPtD_w.at(type));
     f->GetObject(char_add(str, "pt_resp_nGenJetPF_genJetWidth_w"), pt_resp_nGenJetPF_genJetWidth_w.at(type));
+    f->GetObject(char_add(str, "pt_resp_all_w"), pt_resp_all_w.at(type));
 
     f->GetObject(char_add(str, "N_R_30_norm"), N_R_30.at(type));
     f->GetObject(char_add(str, "N_R_60_norm"), N_R_60.at(type));
@@ -134,15 +137,42 @@ void drawGluonHistos() {
     f2->GetObject(char_add(str, "dR_nPF_fromPV2"), dR_nPF_fromPV2.at(type));
     f2->GetObject(char_add(str, "dR_nPF_fromPV3"), dR_nPF_fromPV3.at(type));
 
-    f2->GetObject(char_add(str, "genJet_neutral_pT_fraction"), neutralPtFrac.at(type));
+    f2->GetObject(char_add(str, "genJet_neutral_pT_fraction_norm"), neutralPtFrac.at(type));
 
     ++type;
    }
 
+   vector<TH2D*> fnh_R_30(3);
+   vector<TH2D*> fnh_R_60(3);
+   vector<TH2D*> fnh_R_120(3);
+   vector<TH2D*> fnh_R_240(3);
+   vector<TH2D*> fnh_R_480(3);
+   vector<TH2D*> fnh_R_960(3);
+   vector<TH2D*> fnh_R_1920(3);
+   vector<TH2D*> fnh_R_3840(3);
+
+    type = G;
+    for (string str : {"gluon_", "UD_", "S_"}) {
+        f->GetObject(char_add(str, "fnh_R_30_norm"), fnh_R_30.at(type));
+        f->GetObject(char_add(str, "fnh_R_60_norm"), fnh_R_60.at(type));
+        f->GetObject(char_add(str, "fnh_R_120_norm"), fnh_R_120.at(type));
+        f->GetObject(char_add(str, "fnh_R_240_norm"), fnh_R_240.at(type));
+        f->GetObject(char_add(str, "fnh_R_480_norm"), fnh_R_480.at(type));
+        f->GetObject(char_add(str, "fnh_R_960_norm"), fnh_R_960.at(type));
+        f->GetObject(char_add(str, "fnh_R_1920_norm"), fnh_R_1920.at(type));
+        f->GetObject(char_add(str, "fnh_R_3840_norm"), fnh_R_3840.at(type));
+        ++type;
+    }
+
+   TH2D* jetNeutralPtFracUD;
+   TH2D* jetNeutralPtFracS;
+   f2->GetObject("UD_genJet_neutral_pT_fraction_norm", jetNeutralPtFracUD);
+   f2->GetObject("S_genJet_neutral_pT_fraction_norm", jetNeutralPtFracS);
+
     TLatex *tex = new TLatex(); tex->SetNDC();
     tex->SetTextSize(0.05); tex->SetTextColor(kBlack);
 
-/*
+
     //Pt response
     TH1D* h = tdrHist("h", "Response", 0.9, 1.2,
     "gen p_{T} (GeV)", 30, 3500);
@@ -468,11 +498,13 @@ void drawGluonHistos() {
 
     tex->DrawLatex(0.5, 0.95,"All");
 
+/*
     TLegend *leg5 = tdrLeg(0.37,0.90-5*0.045,0.57,0.90);
     leg5->AddEntry(dR_nPF_fromPV0, "PF_{fromPV} = 0", "PLE");
     leg5->AddEntry(dR_nPF_fromPV1, "PF_{fromPV} = 1", "PLE");
     leg5->AddEntry(dR_nPF_fromPV2, "PF_{fromPV} = 2", "PLE");
     leg5->AddEntry(dR_nPF_fromPV3, "PF_{fromPV} = 3", "PLE");
+    */
 
     vector<vector<TH2D*>> probs_histos = {genJetMass_probs, jetGirth_probs, genJetLHA_probs, genJetWidth_probs, genJetThrust_probs, genJetMultiplicity_probs};
     vector<const char*> y_label = {static_cast<const char*>("Mass"), static_cast<const char*>("Girth"), static_cast<const char*>("LHA"), static_cast<const char*>("Width"),
@@ -488,7 +520,7 @@ void drawGluonHistos() {
         probs_histos.at(i).at(GLUON)->GetYaxis()->SetTitle(y_label.at(i));
         probs_histos.at(i).at(GLUON)->GetZaxis()->SetTitle("prob");
         probs_histos.at(i).at(GLUON)->SetAxisRange(0,0.1,"Z");
-        probs_histos.at(i).at(GLUON)->Draw("colz");
+        probs_histos.at(i).at(GLUON)->Draw("col");
 
         gt->Draw();
 
@@ -499,13 +531,13 @@ void drawGluonHistos() {
         probs_histos.at(i).at(QUARK)->GetYaxis()->SetTitle(y_label.at(i));
         probs_histos.at(i).at(QUARK)->GetZaxis()->SetTitle("prob");
         probs_histos.at(i).at(QUARK)->SetAxisRange(0,0.1, "Z");
-        probs_histos.at(i).at(QUARK)->Draw("colz");
+        probs_histos.at(i).at(QUARK)->Draw("col");
     }
 
     //Pt response weighted with different values
-    vector<string> legend_str = {" mass", " girth", " LHA", " width", " thrust", " multiplicity", " pTD^2", " nGenJetPF+Width"};
+    vector<string> legend_str = {" mass", " girth", " LHA", " width", " thrust", " multiplicity", " pTD^2", " nGenJetPF+Width", " all"};
     vector<vector<TProfile*>> profiles = {pt_resp_genJetMass_w, pt_resp_jetGirth_w, pt_resp_genJetLHA_w, pt_resp_genJetWidth_w, pt_resp_genJetThrust_w, 
-    pt_resp_genJetMultiplicity_w, pt_resp_genJetPtD_w, pt_resp_nGenJetPF_genJetWidth_w};
+    pt_resp_genJetMultiplicity_w, pt_resp_genJetPtD_w, pt_resp_nGenJetPF_genJetWidth_w, pt_resp_all_w};
     vector<TProfile*> plotted_pt_prof;
 
     TH1D* allHist = pt_resp.at(ALL)->ProjectionX();
@@ -574,8 +606,7 @@ void drawGluonHistos() {
     nGenJetPF_genJetWidth_probs.at(QUARK)->Draw("BOX2");
 
     qt->Draw();
-*/
-
+/*
     TFile* f3 = TFile::Open("outputGluonHistos_gen.root");
 
     vector<TH2D*> N_R_30_other(3);
@@ -602,7 +633,6 @@ void drawGluonHistos() {
 
     Width_t width = 3;
 
-    //
     vector<TProfile*> profs_GQ(3);
     vector<TProfile*> profs_otherPt(3);
     vector<TH2D*> N_R_2D;
@@ -660,7 +690,7 @@ void drawGluonHistos() {
         profs_otherPt.at(QUARK)->SetMarkerSize(0.8);
 
         tex->DrawLatex(0.15, 0.95, char_add("Quarks, correllation factor: ", to_string(N_R_2D.at(QUARK)->GetCorrelationFactor())));
-    }
+    }*/
 
     TCanvas* c60 = new TCanvas("c60", "60", 1500, 700);
     c60->Divide(2,1);
@@ -685,14 +715,100 @@ void drawGluonHistos() {
     tdrCanvas("c61", h11, 4, 11, true);
 
     TProfile* neutralFrac_gluon_profile = neutralPtFrac.at(GLUON)->ProfileX("neutralFrac_gluon_profile");
-    tdrDraw(neutralFrac_gluon_profile, "P", kFullCircle, kRed);
+    tdrDraw(neutralFrac_gluon_profile, "HISTP", kFullCircle, kRed);
 
     TProfile* neutralFrac_quark_profile = neutralPtFrac.at(QUARK)->ProfileX("neutralFrac_quark_profile");
-    tdrDraw(neutralFrac_quark_profile, "P", kFullCircle, kBlue);
+    tdrDraw(neutralFrac_quark_profile, "HISTP", kFullCircle, kBlue);
+
+    TProfile* neutralFrac_UD_profile = jetNeutralPtFracUD->ProfileX("neutralFrac_UD_profile");
+    tdrDraw(neutralFrac_UD_profile, "HISTP", kFullCircle, kBlack);
+
+    TProfile* neutralFrac_S_profile = jetNeutralPtFracS->ProfileX("neutralFrac_S_profile");
+    tdrDraw(neutralFrac_S_profile, "HISTP", kFullCircle, kGreen);
 
     gPad->SetLogx();
 
     TLegend *leg5 = tdrLeg(0.37,0.90-5*0.045,0.57,0.90);
     leg5->AddEntry(neutralFrac_gluon_profile, "Gluons", "PLE");
-    leg5->AddEntry(neutralFrac_quark_profile, "Quarks", "PLE");
+    leg5->AddEntry(neutralFrac_quark_profile, "Quarks (UDS)", "PLE");
+    leg5->AddEntry(neutralFrac_UD_profile, "UD", "PLE");
+    leg5->AddEntry(neutralFrac_S_profile, "S", "PLE");
+
+
+    vector<TProfile*> profs(3);
+    vector<TH2D*> fnh_R_2D;
+    vector<vector<TH2D*>> fnh_histos = {fnh_R_30, fnh_R_60, fnh_R_120, fnh_R_240, fnh_R_480, fnh_R_960, fnh_R_1920, fnh_R_3840};
+    vector<string> pt_str = {"30 GeV", "60 GeV", "120 GeV", "240 GeV", "480 GeV", "960 GeV", "1920 GeV", "3840 GeV"};
+    for (int i = 0; i != fnh_histos.size(); ++i) {
+        fnh_R_2D = fnh_histos.at(i);
+        profs.at(G) = fnh_R_2D.at(G)->ProfileX(char_add("gluon", to_string(i)));
+        profs.at(UD) = fnh_R_2D.at(UD)->ProfileX(char_add("UD", to_string(i)));
+        profs.at(S) = fnh_R_2D.at(S)->ProfileX(char_add("S", to_string(i)));
+        TCanvas* c70 = new TCanvas(char_add("c", to_string(70 + i)), char_add("c", to_string(70 + i)),1600,900);
+        c70->Divide(2,2);
+
+        c70->cd(2);
+        fnh_R_2D.at(GLUON)->SetAxisRange(0.5, 1.8, "Y");
+        fnh_R_2D.at(GLUON)->SetAxisRange(0, 1, "X");
+        fnh_R_2D.at(GLUON)->GetXaxis()->SetTitle("p_{T,neutral}/p_{T,jet}");
+        fnh_R_2D.at(GLUON)->GetYaxis()->SetTitle("R");
+        fnh_R_2D.at(GLUON)->GetZaxis()->SetTitle("count");
+        fnh_R_2D.at(GLUON)->Draw("colz");
+        profs.at(G)->Draw("HISTPSAME");
+        profs.at(UD)->Draw("HISTPSAME");
+        profs.at(S)->Draw("HISTPSAME");
+
+        gPad->SetLogz();
+
+        tex->DrawLatex(0.20, 0.95, "Gluons");
+
+        c70->cd(3);
+        fnh_R_2D.at(UD)->SetAxisRange(0.5, 1.8, "Y");
+        fnh_R_2D.at(UD)->SetAxisRange(0, 1,"X");
+        fnh_R_2D.at(UD)->GetXaxis()->SetTitle("p_{T,neutral}/p_{T,jet}");
+        fnh_R_2D.at(UD)->GetYaxis()->SetTitle("R");
+        fnh_R_2D.at(UD)->GetZaxis()->SetTitle("count");
+        fnh_R_2D.at(UD)->Draw("colz");
+        tex->DrawLatex(0.20, 0.95, "UD");
+        profs.at(G)->Draw("HISTPSAME");
+        profs.at(UD)->Draw("HISTPSAME");
+        profs.at(S)->Draw("HISTPSAME");
+
+        gPad->SetLogz();
+
+        c70->cd(4);
+        fnh_R_2D.at(S)->SetAxisRange(0.5, 1.8, "Y");
+        fnh_R_2D.at(S)->SetAxisRange(0, 1,"X");
+        fnh_R_2D.at(S)->GetXaxis()->SetTitle("p_{T,neutral}/p_{T,jet}");
+        fnh_R_2D.at(S)->GetYaxis()->SetTitle("R");
+        fnh_R_2D.at(S)->GetZaxis()->SetTitle("count");
+        fnh_R_2D.at(S)->Draw("colz");
+        tex->DrawLatex(0.20, 0.95, "S");
+        profs.at(G)->Draw("HISTPSAME");
+        profs.at(UD)->Draw("HISTPSAME");
+        profs.at(S)->Draw("HISTPSAME");
+
+        gPad->SetLogz();
+
+        profs.at(GLUON)->SetMarkerStyle(kFullCircle);
+        profs.at(GLUON)->SetMarkerColor(kRed);
+        profs.at(GLUON)->SetMarkerSize(0.8);
+        profs.at(QUARK)->SetMarkerStyle(kFullCircle);
+        profs.at(QUARK)->SetMarkerColor(kBlue);
+        profs.at(QUARK)->SetMarkerSize(0.8);
+        profs.at(S)->SetMarkerStyle(kFullCircle);
+        profs.at(S)->SetMarkerColor(kBlack);
+        profs.at(S)->SetMarkerSize(0.8);
+
+        c70->cd(1);
+        TLatex *tex2 = new TLatex(); tex2->SetNDC();
+        tex2->SetTextSize(0.1);
+        tex2->DrawLatex(0.15, 0.8, pt_str.at(i).c_str());
+
+        TLegend* leg70 = new TLegend(0.15,0.5,0.4,0.7);
+        leg70->AddEntry(profs.at(GLUON), "Gluons", "PLE");
+        leg70->AddEntry(profs.at(UD), "UD quarks", "PLE");
+        leg70->AddEntry(profs.at(S), "S quarks", "PLE");
+        leg70->Draw();
+    }
 }
